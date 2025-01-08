@@ -3,6 +3,29 @@ title: "Homework 1: Namit Shrivastava"
 format: pdf
 editor: visual
 ---
+Firstly I will be creating the dataset
+```{r}
+film_noir_data <- data.frame(
+  Week = as.Date(c("2022-10-02", "2022-10-09", "2022-10-16", "2022-10-23", 
+                   "2022-10-30", "2022-11-06", "2022-11-13", "2022-11-20",
+                   "2022-11-27", "2022-12-04", "2022-12-11", "2022-12-18")),
+  Searches = c(68, 73, 58, 59, 72, 70, 77, 57, 56, 76, 63, 52)
+)
+```
 ## 1. a) [5 points] Calculate maximum likelihood estimate of p (i.e. the proportion of all 781 searches that occurred in each week). Graph these 12 proportions.
 
-Ok so 
+Ok so by formula maximum likelihood estimate (MLE) of p for each week is simply the proportion of searches in that week (each row) relative to the total searches i.e. 
+Pi = (searches in week i)/total searches
+For example, in the table, for Week 10/2/2022, the p value will be calculated as 68/781 = 0.0871 and so on for the other rows. The results are:
+```{r}
+#Now I will be calculating the 
+#proportions with formatted strings
+total_searches <- sum(film_noir_data$Searches)
+film_noir_data$Proportion <- sprintf("%d/%d = %.4f", 
+                                   film_noir_data$Searches, 
+                                   total_searches,
+                                   film_noir_data$Searches/total_searches)
+
+film_noir_data
+```
+
