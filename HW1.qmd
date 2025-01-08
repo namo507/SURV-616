@@ -1,0 +1,8 @@
+---
+title: "Homework 1: Namit Shrivastava"
+format: pdf
+editor: visual
+---
+## 1. a) [5 points] Calculate maximum likelihood estimate of p (i.e. the proportion of all 781 searches that occurred in each week). Graph these 12 proportions.
+
+Ok so 
