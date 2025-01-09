@@ -15,7 +15,7 @@ film_noir_data <- data.frame(
 ## 1. a) [5 points] Calculate maximum likelihood estimate of p (i.e. the proportion of all 781 searches that occurred in each week). Graph these 12 proportions.
 
 Ok so by formula maximum likelihood estimate (MLE) of p for each week is simply the proportion of searches in that week (each row) relative to the total searches i.e. 
-Pi = (searches in week i)/total searches
+p_i = (searches in week i)/total searches
 For example, in the table, for Week 10/2/2022, the p value will be calculated as 68/781 = 0.0871 and so on for the other rows. The results are:
 ```{r}
 #Now I will be calculating the 
@@ -29,3 +29,8 @@ film_noir_data$Proportion <- sprintf("%d/%d = %.4f",
 film_noir_data
 ```
 
+## 1. b) [5 points] Write the null hypothesis that the proportion of searches for “film noir” is the same each week. Also, write the alternative hypothesis (i.e., that there has been a change in the proportion of searches each week).
+
+Null Hypothesis (H_0): The proportion of searches for "film noir" is the same each week i.e., p1 = p2 = p3 ..... = p12 = 1/12 = 0.0833
+
+Alternative Hypothesis (H_a): There has been a change in the proportion of searches each week i.e. basically it varies across weeks. So, p_i != p_j, for at least one pair i,j or simply, at least one p_i != 1/12
