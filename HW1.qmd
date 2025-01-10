@@ -46,7 +46,7 @@ where $O_{i}$ is the observed frequency (searches per week), and $E_{i}$ is the 
 
 $E_{i}$ will be calculated as Total Searches/Number of weeks = 781/12 = 65.083
 Now calculating the $O_{i}$ is given in the table as the searches value like $O_{1}$ = 68, $O_{2}$ = 73 and so on.
-Now I will be calculating the values using this R code:
+Now I will be calculating the value using this R code:
 
 ```{r}
 # Observed frequencies 
@@ -70,3 +70,15 @@ Now formulating, we have,
 $$
 G^2 = 2 \sum_{i=1}^{k} O_i \ln\!\biggl(\frac{O_i}{E_i}\biggr)
 $$
+
+Now I will be calculating the value using this R code:
+```{r}
+# Calculate G-Squared statistic 
+G_squared <- 2 * sum(O_i * log(O_i / E_i)) 
+G_squared
+```
+A $G^{2}$ value of 12.59 means for 12 categories (i.e., 11 degrees of freedom under the null hypothesis), it is smaller than the critical value at the 5% level (approximately 19.68). 
+
+This again implies the corresponding p-value is greater than 0.05, so we fail to reject the null hypothesis that the weekly “film noir” search proportions are equal. 
+
+Simply one can say that there is no statistically significant evidence of week-to-week changes in the proportion of searches at the 5% level.
