@@ -107,3 +107,87 @@ Simply one can say that there is no statistically significant evidence of week-t
 
 ## 2. a) [5 points] Graph the proportions of all steps taken on each day of the week.
 So the proportion will be calculated as the 
+
+$p_{i} = \frac{n_{i}}{\text{Total Searches}}$
+where i=1,2,…,7
+
+So firstly let me create the data frame and calculate the proportions
+```{r}
+steps_data <- data.frame(
+  Day = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"),
+  Steps = c(3358, 2894, 2346, 2981, 2956, 2239, 3974)
+)
+  # Calculate proportions
+steps_data$Proportion <- steps_data$Steps / sum(steps_data$Steps)
+steps_data
+```
+Now based on the proportion column, I can now show the plotting as:
+```{r}
+library(ggplot2)
+
+# Providing data for steps_data
+steps_data <- data.frame(
+  Day = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"),
+  Steps = c(3358, 2894, 2346, 2981, 2956, 2239, 3974),
+  Proportion = c(0.1618469, 0.1394833, 0.1130711, 0.1436765, 0.1424716, 0.1079140, 0.1915365)
+)
+
+# Ensure the days are in the correct order since
+#ggplot does it alphabetically by default
+steps_data$Day <- factor(steps_data$Day, levels = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"))
+
+# Plotting the graph
+ggplot(steps_data, aes(x = Day, y = Proportion)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Proportion of Steps Taken Each Day", y = "Proportion of Total Steps") +
+  geom_text(aes(label = round(Proportion, 3)), vjust = -0.5)
+```
+
+## 2. b) [10 points] Calculate the maximum likelihood estimate of p, as well as the maximum likelihood estimate of V(p). Note that the latter V(p) is a matrix of variances and covariances.
+
+MLE of p will be given as $\hat{p}_i = \frac{n_i}{N}$
+So these values are already calculated before. Now, for a multinomial distribution, the variances and covariances of $\hat{p}_i$ formulae are:
+
+$$
+\text{Var}(\hat{p}_i) = \frac{\hat{p}_i (1 - \hat{p}_i)}{N}
+$$
+
+and 
+
+$$
+\text{Cov}(\hat{p}_i, \hat{p}_j) = -\frac{\hat{p}_i \hat{p}_j}{N} \quad \text{for} \quad i \neq j
+$$
+
+So based on these formulae, I am gonna write the R code to get the values:
+```{r}
+# Calculated MLE of p from before
+p_hat <- steps_data$Proportion
+print(round(p_hat, 4))
+
+# Now calculating variance-covariance matrix
+n_total <- sum(steps_data$Steps)
+V_p <- matrix(0, 7, 7)
+
+# Filling the diagonal elements
+for(i in 1:7) {
+  V_p[i,i] <- (p_hat[i] * (1 - p_hat[i])) / n_total
+}
+
+# Then filling off-diagonal elements
+for(i in 1:7) {
+  for(j in 1:7) {
+    if(i != j) {
+      V_p[i,j] <- -(p_hat[i] * p_hat[j]) / n_total
+    }
+  }
+}
+
+V_p
+```
+So, based on the variance-covariance matrix results, one can infer that the variances of the daily proportions of steps are relatively small, indicating that the proportions are quite stable.
+
+The diagonal elements of the matrix represent the variances of the proportions for each day, while the off-diagonal elements represent the covariances between the proportions of different days.
+
+Interestingly, negative covariances suggest that an increase in the proportion of steps on one day is associated with a decrease in the proportion on another day which aligns with the graduate student's hypothesis that the number of steps taken each day should be about the same. Also, the small variances and negative covariances support the idea that the student's daily walking patterns are consistent, with no significant deviations from the expected proportions.
+
+## 2. c) [15 points] Calculate the maximum likelihood estimate of the proportion of steps taken on the weekend(Sunday and Saturday, p1+p7) and the maximum likelihood estimate of the variance of the proportion of steps taken on the weekend.
