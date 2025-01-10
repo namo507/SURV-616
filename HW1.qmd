@@ -38,6 +38,25 @@ Alternative Hypothesis ($H_{A}$): There has been a change in the proportion of s
 ## 1. c) [15 points] Compute the X2 and G2 statistics. What do these tell us?
 
 Chi-Square ($X^{2}$) Statistic is given as:
-$X^{2}$ = (i = 1 to n) $\epsilon$  $($O_{i}$-$E_{i}$)^{2}$/$E_{i}$
+$X^{2}$ = (i = 1 to 12) $\epsilon$  $($O_{i}$-$E_{i}$)^{2}$/$E_{i}$
 
-where $O_{i}$ is the observed frequency (searches per week), and $E_{i}$ is the expected frequency under the null hypothesis.
+where $O_{i}$ is the observed frequency (searches per week), and $E_{i}$ is the expected frequency under the null hypothesis, meaning the expected proportion for each week is equal since searches are distributed uniformly.
+
+$E_{i}$ will be calculated as Total Searches/Number of weeks = 781/12 = 65.083
+Now calculating the $O_{i}$ is given in the table as the searches value like $O_{1}$ = 68, $O_{2}$ = 73 and so on.
+Now I will be calculating the values using this R code:
+
+```{r}
+# Observed frequencies 
+O_i <- c(68, 73, 58, 59, 72, 70, 77, 57, 56, 76, 63, 52) 
+# Expected frequency 
+E_i <- rep(781 / 12, 12) 
+# Calculate Chi-Square statistic 
+chi_squared <- sum((O_i - E_i)^2 / E_i) 
+chi_squared
+```
+So the Chi-Square statistic ($X^{2}$) is 12.52. This will be the hypothetical value. 
+If the critical value from the chi-square table for degrees of freedom, df = 11 (since 12 weeks mentioned so 12-1 = 11) at 0.05 significance level is approximately 19.68.
+
+Since 12.52 < 19.68, meaning the corresponding p-value is greater than 0.05, and hence we fail to reject the null hypothesis that the average weekly counts are all the same. 
+In simple terms, there's no statistically significant evidence, at the 5% level, that the proportion of “film noir” searches varies across the 12 weeks.
