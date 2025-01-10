@@ -28,6 +28,28 @@ film_noir_data$Proportion <- sprintf("%d/%d = %.4f",
 
 film_noir_data
 ```
+As for the graph, the code is:
+```{r}
+#Importing the necessary library
+library(ggplot2)
+
+# Creating the plot using the existing data frame
+ggplot(film_noir_data, aes(x = Week, y = Searches/total_searches)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_text(aes(label = sprintf("%.3f", Searches/total_searches)), 
+            vjust = -0.5) +
+  labs(title = "Proportion of 'Film Noir' Searches by Week",
+       y = "Proportion of Total Searches",
+       x = "Week") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_x_date(date_labels = "%Y-%m-%d", date_breaks = "1 week") +
+  ylim(0, max(film_noir_data$Searches/total_searches) * 1.2)
+
+```
 
 ## 1. b) [5 points] Write the null hypothesis that the proportion of searches for “film noir” is the same each week. Also, write the alternative hypothesis (i.e., that there has been a change in the proportion of searches each week).
 
@@ -77,8 +99,11 @@ Now I will be calculating the value using this R code:
 G_squared <- 2 * sum(O_i * log(O_i / E_i)) 
 G_squared
 ```
-A $G^{2}$ value of 12.59 means for 12 categories (i.e., 11 degrees of freedom under the null hypothesis), it is smaller than the critical value at the 5% level (approximately 19.68). 
+A $G^{2}$ value of 12.59 means for 12 categories (i.e., 11 degrees of freedom under the null hypothesis), it is like before, smaller than the critical value at the 5% level (approximately 19.68). 
 
 This again implies the corresponding p-value is greater than 0.05, so we fail to reject the null hypothesis that the weekly “film noir” search proportions are equal. 
 
 Simply one can say that there is no statistically significant evidence of week-to-week changes in the proportion of searches at the 5% level.
+
+## 2. a) [5 points] Graph the proportions of all steps taken on each day of the week.
+So the proportion will be calculated as the 
