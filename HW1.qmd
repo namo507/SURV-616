@@ -19,8 +19,8 @@ Ok so by formula maximum likelihood estimate (MLE) of p for each week is simply 
 $p_{i}$ = (searches in week i)/total searches
 For example, in the table, for Week 10/2/2022, the p value will be calculated as 68/781 = 0.0871 and so on for the other rows. The results are:
 ```{r}
-#Now I will be calculating the 
-#proportions with formatted strings
+# Now I will be calculating the 
+# proportions with formatted strings
 total_searches <- sum(film_noir_data$Searches)
 film_noir_data$Proportion <- sprintf("%d/%d = %.4f", 
                                    film_noir_data$Searches, 
@@ -32,7 +32,7 @@ film_noir_data
 
 As for the graph, the code is:
 ```{r}
-#Importing the necessary library
+# Importing the necessary library
 library(ggplot2)
 
 # Creating the plot using the existing data frame
@@ -140,7 +140,7 @@ steps_data <- data.frame(
 )
 
 # Ensure the days are in the correct order since
-#ggplot does it alphabetically by default
+# ggplot does it alphabetically by default
 steps_data$Day <- factor(steps_data$Day, levels = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"))
 
 # Plotting the graph
@@ -239,7 +239,7 @@ Now the R code for this calculation is:
 steps <- c(3358, 2894, 2346, 2981, 2956, 2239, 3974)
 
 # Expected steps (equal for each day based
-#on the null hypothesis)
+# on the null hypothesis)
 expected_steps <- rep(20748 / 7, 7)
 
 # Calculating Chi-Square statistic
