@@ -191,3 +191,20 @@ The diagonal elements of the matrix represent the variances of the proportions f
 Interestingly, negative covariances suggest that an increase in the proportion of steps on one day is associated with a decrease in the proportion on another day which aligns with the graduate student's hypothesis that the number of steps taken each day should be about the same. Also, the small variances and negative covariances support the idea that the student's daily walking patterns are consistent, with no significant deviations from the expected proportions.
 
 ## 2. c) [15 points] Calculate the maximum likelihood estimate of the proportion of steps taken on the weekend(Sunday and Saturday, p1+p7) and the maximum likelihood estimate of the variance of the proportion of steps taken on the weekend.
+
+So the MLE of the proportion for weekend is $\hat{p}_{\text{weekend}} = \hat{p}_{\text{Sunday}} + \hat{p}_{\text{Saturday}}$
+So calculated value will be:
+```{r}
+p_weekend <- p_hat[1] + p_hat[7]  # Sunday + Saturday
+p_weekend
+```
+Based on the result, the maximum likelihood estimate of the proportion of steps taken on the weekend (Sunday and Saturday) is approximately 0.3534. This means that about 35.34% of the total steps taken in a week are taken on these two days. This result tells me that the student tends to walk more on the weekends compared to the weekdays, which could be due to having more free time or engaging in more activities that involve walking.
+
+Meanwhile the MLE of the variance of the proportion of steps taken on the weekend will be $\text{Var}(\hat{p}_{\text{weekend}}) = \text{Var}(\hat{p}_{\text{Sunday}}) + \text{Var}(\hat{p}_{\text{Saturday}}) + 2 \times \text{Cov}(\hat{p}_{\text{Sunday}}, \hat{p}_{\text{Saturday}})$
+
+So calculated value will be:
+```{r}
+var_weekend <- V_p[1,1] + V_p[7,7] + 2*V_p[1,7]
+var_weekend
+```
+Now the variance of the proportion of steps taken on the weekend is approx 1.101328e-05. This small variance indicates that the proportion of steps taken on the weekend is quite stable and consistent. Not only that but the low variance suggests that there is not much fluctuation in the student's walking pattern on the weekends, reinforcing the idea that the student consistently walks more on these days. Hence, this consistency could be due to a regular routine or planned activities that involve walking during the weekends.
