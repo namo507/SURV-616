@@ -12,6 +12,7 @@ film_noir_data <- data.frame(
   Searches = c(68, 73, 58, 59, 72, 70, 77, 57, 56, 76, 63, 52)
 )
 ```
+
 ## 1. a) [5 points] Calculate maximum likelihood estimate of p (i.e. the proportion of all 781 searches that occurred in each week). Graph these 12 proportions.
 
 Ok so by formula maximum likelihood estimate (MLE) of p for each week is simply the proportion of searches in that week (each row) relative to the total searches i.e. 
@@ -28,6 +29,7 @@ film_noir_data$Proportion <- sprintf("%d/%d = %.4f",
 
 film_noir_data
 ```
+
 As for the graph, the code is:
 ```{r}
 #Importing the necessary library
@@ -79,6 +81,7 @@ E_i <- rep(781 / 12, 12)
 chi_squared <- sum((O_i - E_i)^2 / E_i) 
 chi_squared
 ```
+
 So the Chi-Square statistic ($X^{2}$) is 12.52. This will be the hypothetical value. 
 If the critical value from the chi-square table for degrees of freedom, df = 11 (since 12 weeks mentioned so 12-1 = 11) at 0.05 significance level is approximately 19.68.
 
@@ -99,6 +102,7 @@ Now I will be calculating the value using this R code:
 G_squared <- 2 * sum(O_i * log(O_i / E_i)) 
 G_squared
 ```
+
 A $G^{2}$ value of 12.59 means for 12 categories (i.e., 11 degrees of freedom under the null hypothesis), it is like before, smaller than the critical value at the 5% level (approximately 19.68). 
 
 This again implies the corresponding p-value is greater than 0.05, so we fail to reject the null hypothesis that the weekly “film noir” search proportions are equal. 
@@ -121,6 +125,7 @@ steps_data <- data.frame(
 steps_data$Proportion <- steps_data$Steps / sum(steps_data$Steps)
 steps_data
 ```
+
 Now based on the proportion column, I can now show the plotting as:
 ```{r}
 library(ggplot2)
@@ -184,6 +189,7 @@ for(i in 1:7) {
 
 V_p
 ```
+
 So, based on the variance-covariance matrix results, one can infer that the variances of the daily proportions of steps are relatively small, indicating that the proportions are quite stable.
 
 The diagonal elements of the matrix represent the variances of the proportions for each day, while the off-diagonal elements represent the covariances between the proportions of different days.
@@ -198,6 +204,7 @@ So calculated value will be:
 p_weekend <- p_hat[1] + p_hat[7]  # Sunday + Saturday
 p_weekend
 ```
+
 Based on the result, the maximum likelihood estimate of the proportion of steps taken on the weekend (Sunday and Saturday) is approximately 0.3534. This means that about 35.34% of the total steps taken in a week are taken on these two days. This result tells me that the student tends to walk more on the weekends compared to the weekdays, which could be due to having more free time or engaging in more activities that involve walking.
 
 Meanwhile the MLE of the variance of the proportion of steps taken on the weekend will be $\text{Var}(\hat{p}_{\text{weekend}}) = \text{Var}(\hat{p}_{\text{Sunday}}) + \text{Var}(\hat{p}_{\text{Saturday}}) + 2 \times \text{Cov}(\hat{p}_{\text{Sunday}}, \hat{p}_{\text{Saturday}})$
@@ -207,4 +214,78 @@ So calculated value will be:
 var_weekend <- V_p[1,1] + V_p[7,7] + 2*V_p[1,7]
 var_weekend
 ```
+
 Now the variance of the proportion of steps taken on the weekend is approx 1.101328e-05. This small variance indicates that the proportion of steps taken on the weekend is quite stable and consistent. Not only that but the low variance suggests that there is not much fluctuation in the student's walking pattern on the weekends, reinforcing the idea that the student consistently walks more on these days. Hence, this consistency could be due to a regular routine or planned activities that involve walking during the weekends.
+
+## 3. a) [5 points] About 1.27% (n11+n21)/(n11+n21+n12+22) had myocardial infarction. Since this was a designed experiment, 50% were assigned to take a placebo. If the use of aspirin or placebo was independent of risk of myocardial infarction (i.e. if the risk of myocardial infarction was no different whether you took placebo or aspirin), what would the expected counts be in each cell (n11, n12, n21, and n22)?
+
+So firstly I will create a table which includes the total row and column:
+
+```{r}
+# Creating the observed data as a matrix
+observed_data <- matrix(c(173, 9879, 83, 9970), 
+                        nrow = 2, 
+                        byrow = TRUE, 
+                        dimnames = list(Group = c("Placebo", "Aspirin"), 
+                                        MI_Status = c("Yes (MI)", "No (No MI)")))
+
+# Now adding a new column for row totals
+observed_data_with_totals <- cbind(observed_data, Total = rowSums(observed_data))
+
+# Now adding a new row for column totals
+observed_data_with_totals <- rbind(observed_data_with_totals, 
+                                   Total = colSums(observed_data_with_totals))
+observed_data_with_totals
+```
+
+Total number of participants with myocardial infarction (Yes) will be $n_{11} + n_{21} = 173 + 83 = 256$
+
+Total number of participants without myocardial infarction (No) is $n_{12} + n_{22} = 9879 + 9970 = 19849$
+
+Total number of participants in the Placebo group turns out to be $n_{11} + n_{12} = 173 + 9879 = 10052$
+
+Total number of participants in the Aspirin group will be $n_{21} + n_{22} = 83 + 9970 = 10053$
+
+Grand total of participants is simply $n_{11} + n_{12} + n_{21} + n_{22} = 256 + 19849 = 20105$
+
+Now to find the expected counts in each cell (n11, n12, n21, and n22) under the assumption that the use of aspirin or placebo was independent of the risk of myocardial infarction, I will be using this general formula:
+
+$$E_{ij} = \frac{(\text{row total}_i) \times (\text{column total}_j)}{\text{grand total}}$$
+
+Hence, the R code for expected counts for each cell will be:
+
+```{r}
+# Defining the observed counts
+n11 <- 173
+n12 <- 9879
+n21 <- 83
+n22 <- 9970
+
+# Calculating the marginal totals
+total_MI <- n11 + n21
+total_no_MI <- n12 + n22
+total_placebo <- n11 + n12
+total_aspirin <- n21 + n22
+grand_total <- n11 + n12 + n21 + n22
+
+# Now calculating the expected counts
+E11 <- (total_placebo * total_MI) / grand_total
+E12 <- (total_placebo * total_no_MI) / grand_total
+E21 <- (total_aspirin * total_MI) / grand_total
+E22 <- (total_aspirin * total_no_MI) / grand_total
+
+E11
+E12
+E21
+E22
+```
+
+So for each cell, the expected counts is simply calculated as:
+
+$$E_{11} = \frac{(n_{11} + n_{12}) \times (n_{11} + n_{21})}{n_{11} + n_{12} + n_{21} + n_{22}} = 127.9936$$
+
+$$E_{12} = \frac{(n_{11} + n_{12}) \times (n_{12} + n_{22})}{n_{11} + n_{12} + n_{21} + n_{22}} = 9924.006$$
+
+$$E_{21} = \frac{(n_{21} + n_{22}) \times (n_{11} + n_{21})}{n_{11} + n_{12} + n_{21} + n_{22}} = 128.0064$$
+
+$$E_{22} = \frac{(n_{21} + n_{22}) \times (n_{12} + n_{22})}{n_{11} + n_{12} + n_{21} + n_{22}} = 9924.994$$
