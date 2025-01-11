@@ -65,6 +65,7 @@ Chi-Square ($X^{2}$) Statistic is given as:
 $$
 X^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}
 $$
+k=12 here
 
 where $O_{i}$ is the observed frequency (searches per week), and $E_{i}$ is the expected frequency under the null hypothesis, meaning the expected proportion for each week is equal since searches are distributed uniformly.
 
@@ -95,6 +96,7 @@ Now formulating, we have,
 $$
 G^2 = 2 \sum_{i=1}^{k} O_i \ln\!\biggl(\frac{O_i}{E_i}\biggr)
 $$
+k=12 here
 
 Now I will be calculating the value using this R code:
 ```{r}
@@ -218,6 +220,54 @@ var_weekend
 Now the variance of the proportion of steps taken on the weekend is approx 1.101328e-05. This small variance indicates that the proportion of steps taken on the weekend is quite stable and consistent. Not only that but the low variance suggests that there is not much fluctuation in the student's walking pattern on the weekends, reinforcing the idea that the student consistently walks more on these days. Hence, this consistency could be due to a regular routine or planned activities that involve walking during the weekends.
 
 ## 2. d) [15 Points] Test the hypothesis that: H_0: p_1 = p_2 = p_3 = p_4 = p_5 = p_6 = p_7 versus H_A: p_1 \neq p_2 \neq p_3 \neq p_4 \neq p_5 \neq p_6 \neq p_7$$ by computing both the X^2 and G^2 statistics. What do you conclude?
+
+So, under the null hypothesis, the number of steps taken each day is expected to be equal.
+
+Chi-Square ($X^{2}$) Statistic is given as:
+$$
+X^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}
+$$
+k=7 here
+
+Here, $O_{i}$ is is the observed number of steps for day i and 
+$E_{i}$ will be calculated as N/7, where N is the total number of steps (20,748).
+So $E_i = \frac{20,748}{7} \approx 2,964$
+
+Now the R code for this calculation is:
+```{r}
+# Observed steps from the table
+steps <- c(3358, 2894, 2346, 2981, 2956, 2239, 3974)
+
+# Expected steps (equal for each day based
+#on the null hypothesis)
+expected_steps <- rep(20748 / 7, 7)
+
+# Calculating Chi-Square statistic
+chi_squared <- sum((steps - expected_steps)^2 / expected_steps)
+chi_squared
+```
+
+Now, under the null hypothesis that steps are evenly distributed across days, one would expect about 2,964 steps per day. The large $X^{2}$ value indicates substantial deviations from this expectation. With 6 degrees of freedom (since 7 days - 1), the critical value at alpha = 0.05 would be approximately 12.59. But the calculated value of 704.5 far exceeds this threshold.
+This provides very strong statistical evidence against the null hypothesis.
+
+Looking at the proportions graph from before, one can see why there's a substantial variation across days, with Saturday (0.192) and Sunday (0.162) showing notably higher proportions than weekdays, and Friday having the lowest proportion (0.108). The magnitude of $X^{2}$ suggests these differences are not due to random chance but represent real, systematic variations in the student's walking patterns between different days of the week.
+
+
+Now calculating the Likelihood Ratio Test statistic, $G^{2}$, will measure how far the observed data deviate from the expected data under the null hypothesis. So in this question, it compares the observed weekly proportions of "film noir" searches to the expected uniform distribution (i.e., equal proportions across all weeks).
+
+Now formulating, we have,
+$$
+G^2 = 2 \sum_{i=1}^{k} O_i \ln\!\biggl(\frac{O_i}{E_i}\biggr)
+$$
+k=7 here
+
+So the R code for this is:
+```{r}
+# Calculate G-Squared statistic
+G_squared <- 2 * sum(steps * log(steps / expected_steps))
+G_squared
+```
+
 
 ## 3. a) [5 points] About 1.27% (n11+n21)/(n11+n21+n12+22) had myocardial infarction. Since this was a designed experiment, 50% were assigned to take a placebo. If the use of aspirin or placebo was independent of risk of myocardial infarction (i.e. if the risk of myocardial infarction was no different whether you took placebo or aspirin), what would the expected counts be in each cell (n11, n12, n21, and n22)?
 
