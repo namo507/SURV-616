@@ -57,7 +57,7 @@ ggplot(film_noir_data, aes(x = Week, y = Searches/total_searches)) +
 
 Null Hypothesis ($H_{0}$): The proportion of searches for "film noir" is the same each week i.e., $p_{1}$ = $p_{2}$ = $p_{3}$ ..... = $p_{12}$ = 1/12 = 0.0833
 
-Alternative Hypothesis ($H_{A}$): There has been a change in the proportion of searches each week i.e. basically it varies across weeks. So, $p_{i}$ != $p_{j}$, for at least one pair i,j or simply, at least one $p_{i}$ != 1/12
+Alternative Hypothesis ($H_{A}$): There has been a change in the proportion of searches each week i.e. basically it varies across weeks. So, $p_{i} \neq p_{j}$, for at least one pair i,j or simply, at least one $p_{i} \neq 1/12$
 
 ## 1. c) [15 points] Compute the X2 and G2 statistics. What do these tell us?
 
@@ -216,6 +216,8 @@ var_weekend
 ```
 
 Now the variance of the proportion of steps taken on the weekend is approx 1.101328e-05. This small variance indicates that the proportion of steps taken on the weekend is quite stable and consistent. Not only that but the low variance suggests that there is not much fluctuation in the student's walking pattern on the weekends, reinforcing the idea that the student consistently walks more on these days. Hence, this consistency could be due to a regular routine or planned activities that involve walking during the weekends.
+
+## 2. d) [15 Points] Test the hypothesis that: H_0: p_1 = p_2 = p_3 = p_4 = p_5 = p_6 = p_7 versus H_A: p_1 \neq p_2 \neq p_3 \neq p_4 \neq p_5 \neq p_6 \neq p_7$$ by computing both the X^2 and G^2 statistics. What do you conclude?
 
 ## 3. a) [5 points] About 1.27% (n11+n21)/(n11+n21+n12+22) had myocardial infarction. Since this was a designed experiment, 50% were assigned to take a placebo. If the use of aspirin or placebo was independent of risk of myocardial infarction (i.e. if the risk of myocardial infarction was no different whether you took placebo or aspirin), what would the expected counts be in each cell (n11, n12, n21, and n22)?
 
