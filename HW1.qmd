@@ -253,7 +253,7 @@ This provides very strong statistical evidence against the null hypothesis.
 Looking at the proportions graph from before, one can see why there's a substantial variation across days, with Saturday (0.192) and Sunday (0.162) showing notably higher proportions than weekdays, and Friday having the lowest proportion (0.108). The magnitude of $X^{2}$ suggests these differences are not due to random chance but represent real, systematic variations in the student's walking patterns between different days of the week.
 
 
-Now calculating the Likelihood Ratio Test statistic, $G^{2}$, will measure how far the observed data deviate from the expected data under the null hypothesis. So in this question, it compares the observed weekly proportions of "film noir" searches to the expected uniform distribution (i.e., equal proportions across all weeks).
+Now calculating the Likelihood Ratio Test statistic, $G^{2}$, will measure how far the observed data deviate from the expected data under the null hypothesis. So in this question, it tests whether the observed step counts significantly differ from the expected counts under the null hypothesis of equal daily proportions.
 
 Now formulating, we have,
 $$
@@ -267,6 +267,12 @@ So the R code for this is:
 G_squared <- 2 * sum(steps * log(steps / expected_steps))
 G_squared
 ```
+
+Again, with 6 degrees of freedom (7 days - 1), the critical value at alpha = 0.05 is approximately 12.59. the $G^{2}$ value of 695.3545 vastly exceeds this threshold.
+
+This extremely large G2 value indicates substantial variation in the student's walking patterns across different days. The weekend days, particularly Saturday with 3,974 steps and Sunday with 3,358 steps show markedly different patterns compared to weekdays, with Friday having the lowest count at 2,239 steps. Also proportion values were shown previously in the graph.
+
+Hence, both G2 (695.3545) and X2 (704.5) statistics lead to the same conclusion that one must reject the null hypothesis that the student's daily step counts are uniformly distributed across the week. The data overall strongly suggests that the student's walking behavior varies significantly by day of the week.
 
 
 ## 3. a) [5 points] About 1.27% (n11+n21)/(n11+n21+n12+22) had myocardial infarction. Since this was a designed experiment, 50% were assigned to take a placebo. If the use of aspirin or placebo was independent of risk of myocardial infarction (i.e. if the risk of myocardial infarction was no different whether you took placebo or aspirin), what would the expected counts be in each cell (n11, n12, n21, and n22)?
