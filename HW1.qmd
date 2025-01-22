@@ -221,6 +221,70 @@ The diagonal elements of the matrix represent the variances of the proportions f
 
 Interestingly, negative covariances suggest that an increase in the proportion of steps on one day is associated with a decrease in the proportion on another day which aligns with the graduate student's hypothesis that the number of steps taken each day should be about the same. Also, the small variances and negative covariances support the idea that the student's daily walking patterns are consistent, with no significant deviations from the expected proportions.
 
+Now the ind depth calculation will be as follows:
+
+[**Calculation:**] $$
+\scalebox{0.6}{$
+\tiny
+\begin{aligned}
+\hat{V}(\hat{p}) & = \frac{1}{20748} \left( 
+\begin{bmatrix}
+0.1618469 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0.1394833 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0.1130711 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0.1436765 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0.1424716 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0.1079140 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0.1915365
+\end{bmatrix} - 
+\begin{bmatrix}
+0.1618469 \\ 0.1394833 \\ 0.1130711 \\ 0.1436765 \\ 0.1424716 \\ 0.1079140 \\ 0.1915365
+\end{bmatrix}
+\begin{bmatrix}
+0.1618469 0.1394833 0.1130711 0.1436765 0.1424716 0.1079140 0.1915365
+\end{bmatrix}
+\right) \\
+& \implies \frac{1}{20748} \left(
+\begin{bmatrix}
+0.1618469 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0.1394833 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0.1130711 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0.1436765 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0.1424716 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0.1079140 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0.1915365
+\end{bmatrix} -
+\begin{bmatrix}
+0.02619443 & 0.02257495 & 0.01830022 & 0.02325360 & 0.02305858 & 0.01746555 & 0.03099960 \\
+0.02257495 & 0.01945560 & 0.01577154 & 0.02004048 & 0.01987241 & 0.01505221 & 0.02671615 \\
+0.01830022 & 0.01577154 & 0.01278508 & 0.01624567 & 0.01610942 & 0.01220196 & 0.02165725 \\
+0.02325360 & 0.02004048 & 0.01624567 & 0.02064294 & 0.02046982 & 0.01550471 & 0.02751930 \\
+0.02305858 & 0.01987241 & 0.01610942 & 0.02046982 & 0.02029815 & 0.01537468 & 0.02728851 \\
+0.01746555 & 0.01505221 & 0.01220196 & 0.01550471 & 0.01537468 & 0.01164543 & 0.02066948 \\
+0.03099960 & 0.02671615 & 0.02165725 & 0.02751930 & 0.02728851 & 0.02066948 & 0.03668624
+\end{bmatrix}
+\right) \\
+& \implies \frac{1}{20748} \begin{bmatrix}
+0.02619443 & 0.02257495 & 0.01830022 & 0.02325360 & 0.02305858 & 0.01746555 & 0.03099960 \\
+0.02257495 & 0.01945560 & 0.01577154 & 0.02004048 & 0.01987241 & 0.01505221 & 0.02671615 \\
+0.01830022 & 0.01577154 & 0.01278508 & 0.01624567 & 0.01610942 & 0.01220196 & 0.02165725 \\
+0.02325360 & 0.02004048 & 0.01624567 & 0.02064294 & 0.02046982 & 0.01550471 & 0.02751930 \\
+0.02305858 & 0.01987241 & 0.01610942 & 0.02046982 & 0.02029815 & 0.01537468 & 0.02728851 \\
+0.01746555 & 0.01505221 & 0.01220196 & 0.01550471 & 0.01537468 & 0.01164543 & 0.02066948 \\
+0.03099960 & 0.02671615 & 0.02165725 & 0.02751930 & 0.02728851 & 0.02066948 & 0.03668624
+\end{bmatrix}\\
+& \implies
+\begin{bmatrix}
+6.5381 \times 10^{-6} & -1.0881 \times 10^{-6} & -8.8202 \times 10^{-7} & -1.1208 \times 10^{-6} & -1.1114 \times 10^{-6} & -8.4179 \times 10^{-7} & -1.4941 \times 10^{-6} \\
+-1.0881 \times 10^{-6} & 5.7850 \times 10^{-6} & -7.6015 \times 10^{-7} & -9.6590 \times 10^{-7} & -9.5780 \times 10^{-7} & -7.2548 \times 10^{-7} & -1.2877 \times 10^{-6} \\
+-8.8202 \times 10^{-7} & -7.6015 \times 10^{-7} & 4.8335 \times 10^{-6} & -7.8300 \times 10^{-7} & -7.7643 \times 10^{-7} & -5.8810 \times 10^{-7} & -1.0438 \times 10^{-6} \\
+-1.1208 \times 10^{-6} & -9.6590 \times 10^{-7} & -7.8300 \times 10^{-7} & 5.9299 \times 10^{-6} & -9.8659 \times 10^{-7} & -7.4729 \times 10^{-7} & -1.3264 \times 10^{-6} \\
+-1.1114 \times 10^{-6} & -9.5780 \times 10^{-7} & -7.7643 \times 10^{-7} & -9.8659 \times 10^{-7} & 5.8884 \times 10^{-6} & -7.4102 \times 10^{-7} & -1.3152 \times 10^{-6} \\
+-8.4179 \times 10^{-7} & -7.2548 \times 10^{-7} & -5.8810 \times 10^{-7} & -7.4729 \times 10^{-7} & -7.4102 \times 10^{-7} & 4.6399 \times 10^{-6} & -9.9622 \times 10^{-7} \\
+-1.4941 \times 10^{-6} & -1.2877 \times 10^{-6} & -1.0438 \times 10^{-6} & -1.3264 \times 10^{-6} & -1.3152 \times 10^{-6} & -9.9622 \times 10^{-7} & 7.4634 \times 10^{-6}
+\end{bmatrix}
+\end{aligned}$}$$
+
 ## 2. c) [15 points] Calculate the maximum likelihood estimate of the proportion of steps taken on the weekend(Sunday and Saturday, p1+p7) and the maximum likelihood estimate of the variance of the proportion of steps taken on the weekend.
 
 So the MLE of the proportion for weekend is $\hat{p}_{\text{weekend}} = \hat{p}_{\text{Sunday}} + \hat{p}_{\text{Saturday}}$
