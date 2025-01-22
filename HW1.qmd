@@ -71,6 +71,7 @@ where $O_{i}$ is the observed frequency (searches per week), and $E_{i}$ is the 
 
 $E_{i}$ will be calculated as Total Searches/Number of weeks = 781/12 = 65.083
 Now calculating the $O_{i}$ is given in the table as the searches value like $O_{1}$ = 68, $O_{2}$ = 73 and so on.
+
 Now I will be calculating the value using this R code:
 
 ```{r}
@@ -110,6 +111,28 @@ A $G^{2}$ value of 12.59 means for 12 categories (i.e., 11 degrees of freedom un
 This again implies the corresponding p-value is greater than 0.05, so we fail to reject the null hypothesis that the weekly “film noir” search proportions are equal. 
 
 Simply one can say that there is no statistically significant evidence of week-to-week changes in the proportion of searches at the 5% level.
+
+Now showing the actual calculation of these values as:
+[**Calculations:**]
+
+| Week     | Search | Proportion                    | $\chi^2$ Calculation                      | $G^2$ Calculation                                       |
+|---------------|---------------|---------------|---------------|---------------|
+| 10/2/22  | 68     | $\frac{68}{781} = 0.08706786$ | $\frac{(68-65.0833)^2}{65.0833} = 0.1307$ | $2 \times 68 \times \ln(\frac{68}{65.0833}) = 5.9621$   |
+| 10/9/22  | 73     | $\frac{73}{781} = 0.09346991$ | $\frac{(73-65.0833)^2}{65.0833} = 0.9630$ | $2 \times 73 \times \ln(\frac{73}{65.0833}) = 16.7595$  |
+| 10/16/22 | 58     | $\frac{58}{781} = 0.07426376$ | $\frac{(58-65.0833)^2}{65.0833} = 0.7709$ | $2 \times 58 \times \ln(\frac{58}{65.0833}) = -13.3662$ |
+| 10/23/22 | 59     | $\frac{59}{781} = 0.07554417$ | $\frac{(59-65.0833)^2}{65.0833} = 0.5686$ | $2 \times 59 \times \ln(\frac{59}{65.0833}) = -11.5795$ |
+| 10/30/22 | 72     | $\frac{72}{781} = 0.09218950$ | $\frac{(72-65.0833)^2}{65.0833} = 0.7351$ | $2 \times 72 \times \ln(\frac{72}{65.0833}) = 14.5437$  |
+| 11/6/22  | 70     | $\frac{70}{781} = 0.08962868$ | $\frac{(70-65.0833)^2}{65.0833} = 0.3714$ | $2 \times 70 \times \ln(\frac{70}{65.0833}) = 10.1957$  |
+| 11/13/22 | 77     | $\frac{77}{781} = 0.09859155$ | $\frac{(77-65.0833)^2}{65.0833} = 2.1819$ | $2 \times 77 \times \ln(\frac{77}{65.0833}) = 25.8931$  |
+| 11/20/22 | 57     | $\frac{57}{781} = 0.07298335$ | $\frac{(57-65.0833)^2}{65.0833} = 1.0039$ | $2 \times 57 \times \ln(\frac{57}{65.0833}) = -15.1184$ |
+| 11/27/22 | 56     | $\frac{56}{781} = 0.07170294$ | $\frac{(56-65.0833)^2}{65.0833} = 1.2677$ | $2 \times 56 \times \ln(\frac{56}{65.0833}) = -16.8355$ |
+| 12/4/22  | 76     | $\frac{76}{781} = 0.09731114$ | $\frac{(76-65.0833)^2}{65.0833} = 1.8311$ | $2 \times 76 \times \ln(\frac{76}{65.0833}) = 23.5699$  |
+| 12/11/22 | 63     | $\frac{63}{781} = 0.08066581$ | $\frac{(63-65.0833)^2}{65.0833} = 0.0667$ | $2 \times 63 \times \ln(\frac{63}{65.0833}) = -4.0993$  |
+| 12/18/22 | 52     | $\frac{52}{781} = 0.06658131$ | $\frac{(52-65.0833)^2}{65.0833} = 2.6301$ | $2 \times 52 \times \ln(\frac{52}{65.0833}) = -23.3402$ |
+
+$\chi^2$ = 0.1307 + 0.9630 + 0.7709 + 0.5686 + 0.7351 + 0.3714 + 2.1819 + 1.0039 + 1.2677 + 1.8311 + 0.0667 + 2.6301 = 12.52
+
+$G^2$ = 5.9621 + 16.7595 - 13.3662 - 11.5795 + 14.5437 + 10.1957 + 25.8931 - 15.1184 - 16.8355 + 23.5699 - 4.0993 - 23.3402 = 12.59
 
 ## 2. a) [5 points] Graph the proportions of all steps taken on each day of the week.
 So the proportion will be calculated as the 
