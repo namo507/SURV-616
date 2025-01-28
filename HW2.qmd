@@ -13,6 +13,10 @@ So the key aspect to be pointed here is that the researcher is not following par
 
 ## 2. [5 Points] A researcher who wants to study the impact of Vitamin D on children’s health draws a sample of children, randomly splits them into two groups and gives one group Vitamin D and the other group a placebo. Is this a prospective or retrospective study?
 
+I believe this is a prospective study.
+In this scenario, the researcher is starting with a group of children who are initially healthy and then actively intervening by giving one group Vitamin D and the other group a placebo. The researcher will follow these groups over time to observe how their health outcomes differ. This forward-looking approach i.e. starting from the intervention and moving forward to measure its effects, is characteristic of a prospective study as discussed in the lecture.
+
+Also I would like to point out that what makes it even clearer is that the study involves randomization, which is a hallmark of experimental designs like randomized controlled trials. These types of studies are inherently prospective because they track participants into the future to assess the impact of the intervention. So in this case, Vitamin D on specific outcomes i.e. children’s health. So, I’m confident this would be classified as a prospective study.
 
 ##
 ##
