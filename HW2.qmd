@@ -18,8 +18,67 @@ In this scenario, the researcher is starting with a group of children who are in
 
 Also I would like to point out that what makes it even clearer is that the study involves randomization, which is a hallmark of experimental designs like randomized controlled trials. These types of studies are inherently prospective because they track participants into the future to assess the impact of the intervention. So in this case, Vitamin D on specific outcomes i.e. children’s health. So, I’m confident this would be classified as a prospective study.
 
-##
-##
+## 3. The following data are based on a study (Petrovčič, et al, 2016) that varied the content of an email message asking persons to participate in a survey. One group received a message that included a “plea for help.” The other group received a message that did NOT include a plea for help. Here are the results:
+| Message includes a plea for help | Yes | No |
+|:--------------------------------|:---:|:---:|
+| Yes                             | 117 | 1,131 |
+| No                              | 94  | 1,158 |
+
+
+
+## 3. a) [10 points] Estimate the relative risk of responding (plea for help vs not), and report a 95% confidence interval for log-relative risk.
+
+Let me calculate the relative risk step by step:
+
+1) First, I'll calculate the risk for each group:
+
+Risk (plea for help) = $\frac{117}{117 + 1131} = \frac{117}{1248} = 0.0938$ or 9.38%  
+Risk (no plea) = $\frac{94}{94 + 1158} = \frac{94}{1252} = 0.0751$ or 7.51%
+
+2) The relative risk is:
+$RR = \frac{0.0938}{0.0751} = 1.249$
+
+3) For the 95% CI of log(RR), I'll use:
+$log(RR) \pm 1.96 \times SE(log(RR))$
+
+Where $SE(log(RR)) = \sqrt{\frac{1-p_1}{n_1p_1} + \frac{1-p_2}{n_2p_2}}$
+
+$SE(log(RR)) = \sqrt{\frac{1-0.0938}{1248(0.0938)} + \frac{1-0.0751}{1252(0.0751)}} = 0.1324$
+
+95% CI for log(RR): $0.223 \pm 1.96(0.1324) = (-0.0365, 0.4825)$
+
+Therefore, 95% CI for RR: $(e^{-0.0365}, e^{0.4825}) = (0.963, 1.619)$
+
+Now, let me verify this using R:
+```{r}
+# Data from the table
+yes_plea <- 117
+no_plea <- 1131 
+yes_no_plea <- 94
+no_no_plea <- 1158
+
+# Risks
+risk1 <- yes_plea / (yes_plea + no_plea)
+risk2 <- yes_no_plea / (yes_no_plea + no_no_plea)
+
+# Relative risk
+rr <- risk1 / risk2
+
+# Log RR and SE
+log_rr <- log(rr)
+# Corrected SE formula
+se_log_rr <- sqrt((1-risk1)/(risk1*(yes_plea + no_plea)) + 
+                  (1-risk2)/(risk2*(yes_no_plea + no_no_plea)))
+
+# 95% CI using dynamic z value function
+z <- qnorm(0.975)
+ci_lower <- exp(log_rr - z * se_log_rr)
+ci_upper <- exp(log_rr + z * se_log_rr)
+
+# Results
+cat("Relative Risk:", round(rr, 3), "\n")
+cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
+```
 ##
 ##
 ##
