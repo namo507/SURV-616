@@ -3,8 +3,17 @@ title: "Homework 2: Namit Shrivastava"
 format: pdf
 editor: visual
 ---
-##
-##
+## 1. [5 points] A researcher who wants to study the predictors of lung cancer draws a sample of persons with lung cancer from a database of lung cancer patients and a sample of persons without lung cancer from the general population. Is this a prospective or retrospective study?
+
+I think this is a retrospective study. 
+Now from the class lecture, in a retrospective study, researchers look back in time to examine data or events that have already occurred. So in this scenario, the researcher is selecting a group of individuals who already have lung cancer (cases) and comparing them to a group of individuals without lung cancer (controls). Simply the goal here is to investigate potential predictors or risk factors by analyzing past exposures or characteristics in these two groups.
+
+So the key aspect to be pointed here is that the researcher is not following participants over time to see who develops lung cancer (which in turn would make it a prospective study). Instead, they are starting with an outcome (lung cancer) that has already happened and working backward to identify possible causes or predictors. This backward-looking approach in the question mentioned is what defines a retrospective study.
+
+
+## 2. [5 Points] A researcher who wants to study the impact of Vitamin D on children’s health draws a sample of children, randomly splits them into two groups and gives one group Vitamin D and the other group a placebo. Is this a prospective or retrospective study?
+
+
 ##
 ##
 ##
