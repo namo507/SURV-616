@@ -79,6 +79,7 @@ ci_upper <- exp(log_rr + z * se_log_rr)
 cat("Relative Risk:", round(rr, 3), "\n")
 cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
 ```
+I found that the relative risk is 1.249, meaning those who received the plea for help were about 25% more likely to respond than those who didn't. The 95% confidence interval (0.963, 1.619) includes 1, suggesting this difference isn't statistically significant at the 0.05 level.
 ##
 ##
 ##
