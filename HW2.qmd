@@ -147,7 +147,74 @@ So to answer the question "Does the 'plea for help' improve response rates?", I'
 So in practical terms, there's a hint that the "plea for help" might be beneficial, with point estimates suggesting about a 25% increase in likelihood of response. However, given the statistical uncertainty, one should be cautious about claiming a definitive improvement. If I were advising on this study, I'd suggest that the results are promising enough to warrant further investigation with a larger sample size, which might help to narrow the confidence intervals and potentially reveal a statistically significant effect.
 
 
-##
+## 4a) [10 points] The following table is loosely based upon a study of the impact of different types of incentives on survey response rates (Deutskens, et al., 2004). Cases were randomized to either receiver a voucher that the respondent could spend at specific online vendors, or a donation would be made on their behalf. The first question is whether vouchers produce lower or higher response rates relative to donations. Calculate the odds ratio of a voucher producing response relative to donation. Calculate the deviance (G2).
+
+| Incentive Type | Yes | No |
+|:---------------|:---:|:---:|
+| Voucher        | 166 | 564 |
+| Donation       | 121 | 609 |
+
+
+1) First, calculating the odds ratio:
+
+Odds (voucher) = $\frac{166}{564} = 0.294$
+Odds (donation) = $\frac{121}{609} = 0.199$
+
+Odds Ratio = $\frac{0.294}{0.199} = \frac{166 \times 609}{564 \times 121} = 1.48$
+
+2) For the deviance (G2), I'll use:
+$G^2 = 2\sum_{i} O_i \ln(\frac{O_i}{E_i})$
+
+Where:
+$O_i$ = Observed frequencies: [166, 564, 121, 609]
+$E_i$ = Expected frequencies under independence
+
+$G^2 = 2[(166\ln\frac{166}{143.5}) + (564\ln\frac{564}{586.5}) + (121\ln\frac{121}{143.5}) + (609\ln\frac{609}{586.5})] = 8.81$
+
+Now, let me use R to get these values:
+
+```{r}
+# Data from the table
+voucher_yes <- 166
+voucher_no <- 564
+donation_yes <- 121
+donation_no <- 609
+
+# Odds Ratio alculation
+odds_voucher <- voucher_yes / voucher_no
+odds_donation <- donation_yes / donation_no
+odds_ratio <- odds_voucher / odds_donation
+
+# Deviance (G2) calculation
+observed <- c(voucher_yes, voucher_no, donation_yes, donation_no)
+
+# Calculating expected counts
+total_voucher <- voucher_yes + voucher_no
+total_donation <- donation_yes + donation_no
+total_yes <- voucher_yes + donation_yes
+total_no <- voucher_no + donation_no
+total_all <- total_voucher + total_donation
+
+expected_voucher_yes <- (total_voucher * total_yes) / total_all
+expected_voucher_no <- (total_voucher * total_no) / total_all
+expected_donation_yes <- (total_donation * total_yes) / total_all
+expected_donation_no <- (total_donation * total_no) / total_all
+
+expected <- c(expected_voucher_yes, expected_voucher_no, 
+              expected_donation_yes, expected_donation_no)
+
+# Compute G2
+g2 <- 2 * sum(observed * log(observed / expected))
+
+# Print results
+cat("Odds Ratio:", round(odds_ratio, 3), "\n")
+cat("Deviance (G²):", round(g2, 3), "\n")
+```
+
+Now the odds of responding to a voucher incentive are approximately 1.48 times higher than the odds of responding to a donation incentive, which suggests vouchers may be more effective.
+
+The deviance statistic of 8.81 (compared to a $X^{2}$ critical value of 3.84 at alpha=0.05) indicates that there is statistically significant association between incentive type and response rate. Thus, vouchers likely improve response rates compared to donations.
+
 ##
 ##
 ##
