@@ -28,24 +28,30 @@ Also I would like to point out that what makes it even clearer is that the study
 
 ## 3. a) [10 points] Estimate the relative risk of responding (plea for help vs not), and report a 95% confidence interval for log-relative risk.
 
-Let me calculate the relative risk step by step:
+Let me define the variables:
+* $n_{11} = 117$ (Yes responses with plea)
+* $n_{12} = 1131$ (No responses with plea)
+* $n_{21} = 94$ (Yes responses without plea)
+* $n_{22} = 1158$ (No responses without plea)
+* $n_{1+} = n_{11} + n_{12} = 1248$ (Total with plea)
+* $n_{2+} = n_{21} + n_{22} = 1252$ (Total without plea)
 
-1) First, I'll calculate the risk for each group:
+1) Calculating risks for each group:
 
-Risk (plea for help) = $\frac{117}{117 + 1131} = \frac{117}{1248} = 0.0938$ or 9.38%  
-Risk (no plea) = $\frac{94}{94 + 1158} = \frac{94}{1252} = 0.0751$ or 7.51%
+Risk (plea for help) = $p_1 = \frac{n_{11}}{n_{1+}} = \frac{117}{1248} = 0.0938$ or 9.38%  
+Risk (no plea) = $p_2 = \frac{n_{21}}{n_{2+}} = \frac{94}{1252} = 0.0751$ or 7.51%
 
-2) The relative risk is:
-$RR = \frac{0.0938}{0.0751} = 1.249$
+2) The relative risk:
+$RR = \frac{p_1}{p_2} = \frac{0.0938}{0.0751} = 1.249$
 
-3) For the 95% CI of log(RR), I'll use:
+3) For the 95% CI of log(RR):
 $log(RR) \pm 1.96 \times SE(log(RR))$
 
-Where $SE(log(RR)) = \sqrt{\frac{1-p_1}{n_1p_1} + \frac{1-p_2}{n_2p_2}}$
+Where $SE(log(RR)) = \sqrt{\frac{1-p_1}{n_{1+}p_1} + \frac{1-p_2}{n_{2+}p_2}}$
 
 $SE(log(RR)) = \sqrt{\frac{1-0.0938}{1248(0.0938)} + \frac{1-0.0751}{1252(0.0751)}} = 0.1324$
 
-95% CI for log(RR): $0.223 \pm 1.96(0.1324) = (-0.0365, 0.4825)$
+95% CI for log(RR): $ln(1.249) \pm 1.96(0.1324) = 0.223 \pm 0.259 = (-0.0365, 0.4825)$
 
 Therefore, 95% CI for RR: $(e^{-0.0365}, e^{0.4825}) = (0.963, 1.619)$
 
@@ -83,20 +89,26 @@ cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
 
 ## 3b) [10 points] Estimate the odds ratio (plea for help vs not), and report a 95% confidence interval for the log- odds ratio.
 
-Let me calculate the odds ratio:
+Let me define the variables again:
+* $n_{11} = 117$ (Yes responses with plea)
+* $n_{12} = 1131$ (No responses with plea)
+* $n_{21} = 94$ (Yes responses without plea)
+* $n_{22} = 1158$ (No responses without plea)
 
-1) First, calculating the odds for each group:
+1) Calculating odds for each group:
 
-Odds (plea for help) = $\frac{117}{1131} = 0.1034$
-Odds (no plea) = $\frac{94}{1158} = 0.0812$
+Odds (plea for help) = $\frac{n_{11}}{n_{12}} = \frac{117}{1131} = 0.1034$
+Odds (no plea) = $\frac{n_{21}}{n_{22}} = \frac{94}{1158} = 0.0812$
 
-2) The odds ratio is:
-$OR = \frac{0.1034}{0.0812} = 1.274$
+2) The odds ratio:
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{117 \times 1158}{1131 \times 94} = 1.274$
 
 3) For 95% CI of log(OR):
+$SE(log(OR)) = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
+
 $SE(log(OR)) = \sqrt{\frac{1}{117} + \frac{1}{1131} + \frac{1}{94} + \frac{1}{1158}} = 0.1397$
 
-95% CI for log(OR): $0.242 \pm 1.96(0.1397) = (-0.0318, 0.5158)$
+95% CI for log(OR): $ln(1.274) \pm 1.96(0.1397) = 0.242 \pm 0.274 = (-0.0318, 0.5158)$
 
 Therefore, 95% CI for OR: $(e^{-0.0318}, e^{0.5158}) = (0.959, 1.692)$
 
@@ -155,21 +167,36 @@ So in practical terms, there's a hint that the "plea for help" might be benefici
 | Donation       | 121 | 609 |
 
 
-1) First, calculating the odds ratio:
+Let me define the variables for this part:
+* $n_{11} = 166$ (Yes responses with voucher)
+* $n_{12} = 564$ (No responses with voucher)
+* $n_{21} = 121$ (Yes responses with donation)
+* $n_{22} = 609$ (No responses with donation)
+* $n_{1+} = n_{11} + n_{12} = 730$ (Total with voucher)
+* $n_{2+} = n_{21} + n_{22} = 730$ (Total with donation)
+* $n_{+1} = n_{11} + n_{21} = 287$ (Total Yes responses)
+* $n_{+2} = n_{12} + n_{22} = 1173$ (Total No responses)
+* $N = n_{1+} + n_{2+} = 1460$ (Total sample size)
 
-Odds (voucher) = $\frac{166}{564} = 0.294$
-Odds (donation) = $\frac{121}{609} = 0.199$
+1) Calculating odds ratio:
 
-Odds Ratio = $\frac{0.294}{0.199} = \frac{166 \times 609}{564 \times 121} = 1.48$
+Odds (voucher) = $\frac{n_{11}}{n_{12}} = \frac{166}{564} = 0.294$
+Odds (donation) = $\frac{n_{21}}{n_{22}} = \frac{121}{609} = 0.199$
 
-2) For the deviance (G2), I'll use:
+Odds Ratio = $OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{166 \times 609}{564 \times 121} = 1.48$
+
+2) Expected frequencies under independence:
+* $E_{11} = \frac{n_{1+}n_{+1}}{N} = \frac{730 \times 287}{1460} = 143.5$
+* $E_{12} = \frac{n_{1+}n_{+2}}{N} = \frac{730 \times 1173}{1460} = 586.5$
+* $E_{21} = \frac{n_{2+}n_{+1}}{N} = \frac{730 \times 287}{1460} = 143.5$
+* $E_{22} = \frac{n_{2+}n_{+2}}{N} = \frac{730 \times 1173}{1460} = 586.5$
+
+3) Deviance calculation:
 $G^2 = 2\sum_{i} O_i \ln(\frac{O_i}{E_i})$
 
-Where:
-$O_i$ = Observed frequencies: [166, 564, 121, 609]
-$E_i$ = Expected frequencies under independence
+$G^2 = 2[(166\ln\frac{166}{143.5}) + (564\ln\frac{564}{586.5}) + (121\ln\frac{121}{143.5}) + (609\ln\frac{609}{586.5})]$
 
-$G^2 = 2[(166\ln\frac{166}{143.5}) + (564\ln\frac{564}{586.5}) + (121\ln\frac{121}{143.5}) + (609\ln\frac{609}{586.5})] = 8.81$
+$G^2 = 8.81$
 
 Now, let me use R to get these values:
 
@@ -211,10 +238,94 @@ cat("Odds Ratio:", round(odds_ratio, 3), "\n")
 cat("Deviance (G²):", round(g2, 3), "\n")
 ```
 
-Now the odds of responding to a voucher incentive are approximately 1.48 times higher than the odds of responding to a donation incentive, which suggests vouchers may be more effective.
 
-The deviance statistic of 8.81 (compared to a $X^{2}$ critical value of 3.84 at alpha=0.05) indicates that there is statistically significant association between incentive type and response rate. Thus, vouchers likely improve response rates compared to donations.
 
-##
-##
+## 4b) [10 points] Next, we want to compare vouchers to a lottery. Calculate the odds ratio for a voucher to produce response relative to a lottery. Calculate the deviance (G2). 
+
+| Incentive Type | Yes | No |
+|:---------------|:---:|:---:|
+| Voucher        | 166 | 564 |
+| Lottery        | 132 | 598 |
+
+
+Let me define the variables:
+* $n_{11} = 166$ (Yes responses with voucher)
+* $n_{12} = 564$ (No responses with voucher)
+* $n_{21} = 132$ (Yes responses with lottery)
+* $n_{22} = 598$ (No responses with lottery)
+* $n_{1+} = n_{11} + n_{12} = 730$ (Total with voucher)
+* $n_{2+} = n_{21} + n_{22} = 730$ (Total with lottery)
+* $n_{+1} = n_{11} + n_{21} = 298$ (Total Yes responses)
+* $n_{+2} = n_{12} + n_{22} = 1162$ (Total No responses)
+* $N = n_{1+} + n_{2+} = 1460$ (Total sample size)
+
+1) First, calculating odds ratio:
+
+Odds (voucher) = $\frac{n_{11}}{n_{12}} = \frac{166}{564} = 0.294$
+Odds (lottery) = $\frac{n_{21}}{n_{22}} = \frac{132}{598} = 0.221$
+
+Odds Ratio = $OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{166 \times 598}{564 \times 132} = 1.33$
+
+2) For the deviance calculation:
+
+Expected frequencies under independence:
+$E_{11} = \frac{n_{1+}n_{+1}}{N} = \frac{730 \times 298}{1460} = 149$
+$E_{12} = \frac{n_{1+}n_{+2}}{N} = \frac{730 \times 1162}{1460} = 581$
+$E_{21} = \frac{n_{2+}n_{+1}}{N} = \frac{730 \times 298}{1460} = 149$
+$E_{22} = \frac{n_{2+}n_{+2}}{N} = \frac{730 \times 1162}{1460} = 581$
+
+3) Calculate components of $G^2$:
+
+$G^2 = 2[(166\ln\frac{166}{149}) + (564\ln\frac{564}{581}) + (132\ln\frac{132}{149}) + (598\ln\frac{598}{581})]$
+
+$= 2[166(0.108) + 564(-0.0296) + 132(-0.121) + 598(0.0288)]$
+
+$= 2[17.95 - 16.72 - 15.99 + 17.24]$
+
+$= 2(2.48)$
+
+$= 4.96$
+
+```{r}
+# Data from the table
+voucher_yes <- 166
+voucher_no <- 564
+lottery_yes <- 132
+lottery_no <- 598
+
+# Odds Ratio calculation
+odds_voucher <- voucher_yes / voucher_no
+odds_lottery <- lottery_yes / lottery_no
+odds_ratio <- odds_voucher / odds_lottery
+
+# Deviance (G2) calculation
+observed <- c(voucher_yes, voucher_no, lottery_yes, lottery_no)
+
+# Calculating expected counts
+total_voucher <- voucher_yes + voucher_no
+total_lottery <- lottery_yes + lottery_no
+total_yes <- voucher_yes + lottery_yes
+total_no <- voucher_no + lottery_no
+total_all <- total_voucher + total_lottery
+
+expected_voucher_yes <- (total_voucher * total_yes) / total_all
+expected_voucher_no <- (total_voucher * total_no) / total_all
+expected_lottery_yes <- (total_lottery * total_yes) / total_all
+expected_lottery_no <- (total_lottery * total_no) / total_all
+
+expected <- c(expected_voucher_yes, expected_voucher_no, 
+             expected_lottery_yes, expected_lottery_no)
+
+# Compute G2
+g2 <- 2 * sum(observed * log(observed / expected))
+
+# Print results
+cat("Odds Ratio:", round(odds_ratio, 3), "\n")
+cat("Deviance (G²):", round(g2, 3), "\n")
+```
+
+
+## 4c) [10 points] Describe the results from the analysis of 4a and 4b. Does there appear to be differences in response rates across each of the type of incentive comparisons in 4a and 4b?
+
+
 ##
