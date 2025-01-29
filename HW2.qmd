@@ -150,7 +150,7 @@ cat("95% CI for Odds Ratio: (", ci_lower, ",", ci_upper, ")\n")
 
 Based on the results from parts a) and b), I can summarize and interpret the findings as follows:
 
-From part a), the relative risk (RR) is 1.249, with a 95% confidence interval of (0.963, 1.619). This suggests that individuals who received a message with a "plea for help" were about 24.9% more likely to respond compared to those who didn't receive such a plea. However, since the confidence interval includes 1, we can't conclude that this difference is statistically significant at the 0.05 level.
+From part a), the relative risk (RR) is 1.249, with a 95% confidence interval of (0.963, 1.619). This suggests that individuals who received a message with a "plea for help" were about 24.9% more likely to respond compared to those who didn't receive such a plea. However, since the confidence interval includes 1, one can't conclude that this difference is statistically significant at the 0.05 level.
 
 From part b), the odds ratio (OR) is 1.274, with a 95% confidence interval of (0.960, 1.692). This indicates that the odds of responding for those who received a "plea for help" were about 1.274 times the odds for those who didn't. Again, the confidence interval includes 1, suggesting that this difference is not statistically significant at the 0.05 level.
 
@@ -327,5 +327,93 @@ cat("Deviance (G²):", round(g2, 3), "\n")
 
 ## 4c) [10 points] Describe the results from the analysis of 4a and 4b. Does there appear to be differences in response rates across each of the type of incentive comparisons in 4a and 4b?
 
+4a) (Voucher vs. Donation):
+Odds Ratio (OR): 1.481
+Deviance (G2): 8.812
+The odds ratio of 1.481 tells me that participants offered a voucher had roughly 48% higher odds of responding compared to those offered a donation. The deviance statistic (G2 = 8.812) is well above the critical value of 3.84 (for a chi-square test at alpha = 0.05), which means this difference is statistically significant. In practical terms, vouchers appear to be more effective at driving responses than donations.
 
-##
+4b) (Voucher vs. Lottery):
+Odds Ratio (OR): 1.333
+Deviance (G2): 4.883
+Here, the odds ratio of 1.333 suggests that vouchers still outperform lotteries, but the effect is smaller i.e. participants offered vouchers had about 33% higher odds of responding than those offered a lottery. The deviance (G2 = 4.883) is also statistically significant (since 4.883 > 3.84), but the smaller odds ratio implies a weaker association compared to vouchers vs. donations.
+
+Hence, vouchers consistently produce higher response rates than both donations and lotteries. However, the magnitude of improvement depends on the comparison i.e. vouchers are much better than donations and moderately better than lotteries.
+
+So talking about the practical implications of these results, say if I were advising on incentive strategies, I’d recommend prioritizing vouchers over both donations and lotteries. The stronger effect against donations makes vouchers a particularly compelling choice in that comparison. However, if logistical constraints (e.g., cost) make lotteries more feasible, the smaller but still significant advantage of vouchers might need to be weighed against those practical considerations.
+In short, yep, there are differences in response rates, with vouchers being the most effective incentive overall. The strength of this advantage varies depending on what they’re being compared to.
+
+
+## 4d) [10 points] Returning to the data from 4a. The deviance can tell us about association, but not about the direction of that association. Calculate a 95% confidence interval for the odds ratio calculated in 4a. Based on the odds ratio, which form of the incentive has the higher response rate? Is this difference significant?
+
+Let me define our variables:
+* $n_{11} = 166$ (Yes responses with voucher)
+* $n_{12} = 564$ (No responses with voucher)
+* $n_{21} = 121$ (Yes responses with donation) 
+* $n_{22} = 609$ (No responses with donation)
+* $n_{1+} = n_{11} + n_{12} = 730$ (Total with voucher)
+* $n_{2+} = n_{21} + n_{22} = 730$ (Total with donation)
+* $n_{+1} = n_{11} + n_{21} = 287$ (Total Yes responses)
+* $n_{+2} = n_{12} + n_{22} = 1173$ (Total No responses)
+* $N = n_{1+} + n_{2+} = 1460$ (Total sample size)
+
+1) First, calculating the odds for each group:
+
+Odds (voucher) = $\frac{n_{11}}{n_{12}} = \frac{166}{564} = 0.2943$
+Odds (donation) = $\frac{n_{21}}{n_{22}} = \frac{121}{609} = 0.1987$
+
+2) The odds ratio:
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{166 \times 609}{564 \times 121} = 1.481$
+
+3) Taking natural logarithm:
+$ln(OR) = ln(1.481) = 0.393$
+
+4) Standard error calculation:
+$SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
+
+$SE_{ln(OR)} = \sqrt{\frac{1}{166} + \frac{1}{564} + \frac{1}{121} + \frac{1}{609}} = \sqrt{0.0177} = 0.133$
+
+5) 95% CI for log(OR):
+$0.393 \pm 1.96(0.133) = (0.132, 0.654)$
+
+6) Therefore, 95% CI for OR:
+$95\% CI: (e^{0.132}, e^{0.654}) = (1.14, 1.92)$
+
+Now the R code for this will be
+```{r}
+# Data from 4a: Voucher vs. Donation
+voucher_yes <- 166
+voucher_no <- 564
+donation_yes <- 121
+donation_no <- 609
+
+# Calculate odds ratio manually
+odds_voucher <- voucher_yes / voucher_no
+odds_donation <- donation_yes / donation_no
+odds_ratio <- odds_voucher / odds_donation
+
+# Log-odds ratio and standard error
+log_or <- log(odds_ratio)
+se_log_or <- sqrt((1 / voucher_yes) + (1 / voucher_no) + 
+                  (1 / donation_yes) + (1 / donation_no))
+
+# 95% confidence interval for log-odds ratio
+z <- qnorm(0.975) # 1.96 for 95% CI
+ci_lower_log <- log_or - z * se_log_or
+ci_upper_log <- log_or + z * se_log_or
+
+# Convert back to odds ratio scale
+ci_lower <- exp(ci_lower_log)
+ci_upper <- exp(ci_upper_log)
+
+# Print results
+cat("Odds Ratio:", round(odds_ratio, 3), "\n")
+cat("95% Confidence Interval: (", round(ci_lower, 3), ",", round(ci_upper, 3), ")\n")
+```
+
+Right, so based on the odds ratio of 1.48 (95% CI: 1.14–1.92), the voucher incentive clearly leads to a higher response rate compared to donations. Since the odds ratio is greater than 1, this means participants offered vouchers had 48% higher odds of responding than those offered donations. In simpler terms, vouchers are more effective at encouraging people to complete the survey. 
+Crucially, this difference is statistically significant because the confidence interval (1.14–1.92) doesn’t include 1. If there were no real difference, one would expect the odds ratio to hover around 1, but here the entire interval sits above 1, which tells me one can be 95% confident that vouchers genuinely outperform donations.
+
+Interestingly, what makes me even more confident in this conclusion is both the direction and magnitude of the effect. The odds ratio isn’t just barely above 1. It is solidly in a meaningful improvement territory!
+Even the lower bound of the interval (1.14) suggests a 14% increase in odds, which isn’t trivial, while the upper bound (1.92) hints that the true effect could be as large as a 92% boost. This isn’t just a minor difference but a substantial advantage.
+
+If I were to design this survey, I’d prioritize vouchers over donations without hesitation. Vouchers aren’t just slightly better but are significantly better at driving responses.
