@@ -72,15 +72,70 @@ se_log_rr <- sqrt((1-risk1)/(risk1*(yes_plea + no_plea)) +
 
 # 95% CI using dynamic z value function
 z <- qnorm(0.975)
+z
 ci_lower <- exp(log_rr - z * se_log_rr)
 ci_upper <- exp(log_rr + z * se_log_rr)
 
 # Results
 cat("Relative Risk:", round(rr, 3), "\n")
 cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
+z
 ```
 I found that the relative risk is 1.249, meaning those who received the plea for help were about 25% more likely to respond than those who didn't. The 95% confidence interval (0.963, 1.619) includes 1, suggesting this difference isn't statistically significant at the 0.05 level.
-##
+
+## 3b) [10 points] Estimate the odds ratio (plea for help vs not), and report a 95% confidence interval for the log- odds ratio.
+
+Let me calculate the odds ratio:
+
+1) First, calculating the odds for each group:
+
+Odds (plea for help) = $\frac{117}{1131} = 0.1034$
+Odds (no plea) = $\frac{94}{1158} = 0.0812$
+
+2) The odds ratio is:
+$OR = \frac{0.1034}{0.0812} = 1.274$
+
+3) For 95% CI of log(OR):
+$SE(log(OR)) = \sqrt{\frac{1}{117} + \frac{1}{1131} + \frac{1}{94} + \frac{1}{1158}} = 0.1397$
+
+95% CI for log(OR): $0.242 \pm 1.96(0.1397) = (-0.0318, 0.5158)$
+
+Therefore, 95% CI for OR: $(e^{-0.0318}, e^{0.5158}) = (0.959, 1.692)$
+
+So the code for this calculation is:
+```{r}
+# Defining the counts
+a <- 117  # responded with plea
+b <- 1131 # did NOT respond with plea
+c <- 94   # responded without plea
+d <- 1158 # did NOT respond without plea
+
+# Calculate odds for each group
+odds_plea <- a / b
+odds_no_plea <- c / d
+
+# Calculate odds ratio
+odds_ratio <- odds_plea / odds_no_plea
+
+# Log-odds ratio and standard error
+log_or <- log(odds_ratio)
+se_log_or <- sqrt((1 / a) + (1 / b) + (1 / c) + (1 / d))
+
+# 95% Confidence interval for the log-odds ratio
+z <- qnorm(0.975)
+z
+ci_lower_log <- log_or - z * se_log_or
+ci_upper_log <- log_or + z * se_log_or
+
+# Convert back to odds ratio scale
+ci_lower <- exp(ci_lower_log)
+ci_upper <- exp(ci_upper_log)
+
+# Print results
+cat("Odds Ratio:", odds_ratio, "\n")
+cat("95% CI for Odds Ratio: (", ci_lower, ",", ci_upper, ")\n")
+```
+
 ##
 ##
 ##
