@@ -79,9 +79,7 @@ ci_upper <- exp(log_rr + z * se_log_rr)
 # Results
 cat("Relative Risk:", round(rr, 3), "\n")
 cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
-z
 ```
-I found that the relative risk is 1.249, meaning those who received the plea for help were about 25% more likely to respond than those who didn't. The 95% confidence interval (0.963, 1.619) includes 1, suggesting this difference isn't statistically significant at the 0.05 level.
 
 ## 3b) [10 points] Estimate the odds ratio (plea for help vs not), and report a 95% confidence interval for the log- odds ratio.
 
@@ -136,7 +134,19 @@ cat("Odds Ratio:", odds_ratio, "\n")
 cat("95% CI for Odds Ratio: (", ci_lower, ",", ci_upper, ")\n")
 ```
 
-##
+## 3c) [5 points] Summarize and interpret your findings from parts a) and b). Does the “plea for help” improve response rates?
+
+Based on the results from parts a) and b), I can summarize and interpret the findings as follows:
+
+From part a), the relative risk (RR) is 1.249, with a 95% confidence interval of (0.963, 1.619). This suggests that individuals who received a message with a "plea for help" were about 24.9% more likely to respond compared to those who didn't receive such a plea. However, since the confidence interval includes 1, we can't conclude that this difference is statistically significant at the 0.05 level.
+
+From part b), the odds ratio (OR) is 1.274, with a 95% confidence interval of (0.960, 1.692). This indicates that the odds of responding for those who received a "plea for help" were about 1.274 times the odds for those who didn't. Again, the confidence interval includes 1, suggesting that this difference is not statistically significant at the 0.05 level.
+
+So to answer the question "Does the 'plea for help' improve response rates?", I'd say while both the relative risk and odds ratio suggest a trend towards improved response rates with the "plea for help" (both being greater than 1), one can't conclusively say that it significantly improves response rates. The confidence intervals for both measures include 1, which means one can't rule out the possibility that there's no real effect.
+
+So in practical terms, there's a hint that the "plea for help" might be beneficial, with point estimates suggesting about a 25% increase in likelihood of response. However, given the statistical uncertainty, one should be cautious about claiming a definitive improvement. If I were advising on this study, I'd suggest that the results are promising enough to warrant further investigation with a larger sample size, which might help to narrow the confidence intervals and potentially reveal a statistically significant effect.
+
+
 ##
 ##
 ##
