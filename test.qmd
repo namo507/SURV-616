@@ -1,12 +1,15 @@
 ```{r}
-O_i = 59
-E_i = 81.3125
-chi_squared <- sum((O_i - E_i)^2 / E_i)
-chi_squared
-```
-```{r}
-O_i = 59
-E_i = 81.3125
-G_squared <- 2 * sum(O_i * log(O_i / E_i))
-G_squared
+a = 171
+b = 3264
+c = 117
+d = 4320
+
+Vlnr = 
+I
+I_ = c/(c+d)
+I_
+RR = I/I_
+RR
+OR = (a*d)/(b*c)
+OR
 ```
