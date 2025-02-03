@@ -79,8 +79,8 @@ se_log_rr <- sqrt((1-risk1)/(risk1*(yes_plea + no_plea)) +
 # 95% CI using dynamic z value function
 z <- qnorm(0.975)
 z
-ci_lower <- exp(log_rr - z * se_log_rr)
-ci_upper <- exp(log_rr + z * se_log_rr)
+ci_lower <- log_rr - z * se_log_rr
+ci_upper <- log_rr + z * se_log_rr
 
 # Results
 cat("Relative Risk:", round(rr, 3), "\n")
@@ -106,9 +106,9 @@ $OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{117 \times 1158}{1131 \times 94}
 3) For 95% CI of log(OR):
 $SE(log(OR)) = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
 
-$SE(log(OR)) = \sqrt{\frac{1}{117} + \frac{1}{1131} + \frac{1}{94} + \frac{1}{1158}} = 0.1397$
+$SE(log(OR)) = \sqrt{\frac{1}{117} + \frac{1}{1131} + \frac{1}{94} + \frac{1}{1158}} = 0.14468$
 
-95% CI for log(OR): $ln(1.274) \pm 1.96(0.1397) = 0.242 \pm 0.274 = (-0.0318, 0.5158)$
+95% CI for log(OR): $ln(1.274) \pm 1.96(0.14468) = 0.242 \pm 0.274 = (-0.0418, 0.526)$
 
 Therefore, 95% CI for OR: $(e^{-0.0318}, e^{0.5158}) = (0.959, 1.692)$
 
@@ -130,6 +130,7 @@ odds_ratio <- odds_plea / odds_no_plea
 # Log-odds ratio and standard error
 log_or <- log(odds_ratio)
 se_log_or <- sqrt((1 / a) + (1 / b) + (1 / c) + (1 / d))
+se_log_or
 
 # 95% Confidence interval for the log-odds ratio
 z <- qnorm(0.975)
@@ -137,27 +138,18 @@ z
 ci_lower_log <- log_or - z * se_log_or
 ci_upper_log <- log_or + z * se_log_or
 
-# Convert back to odds ratio scale
-ci_lower <- exp(ci_lower_log)
-ci_upper <- exp(ci_upper_log)
-
 # Print results
 cat("Odds Ratio:", odds_ratio, "\n")
-cat("95% CI for Odds Ratio: (", ci_lower, ",", ci_upper, ")\n")
+cat("95% CI for Odds Ratio: (", ci_lower_log, ",", ci_upper_log, ")\n")
 ```
 
 ## 3c) [5 points] Summarize and interpret your findings from parts a) and b). Does the “plea for help” improve response rates?
 
-Based on the results from parts a) and b), I can summarize and interpret the findings as follows:
+Ok so in part 3a) the relative risk (RR) of responding to a message with a “plea for help” compared to a message without a plea is 1.249. This means that the risk of responding is about 24.9% higher for those who received the plea for help. However, the 95% confidence interval (CI) for the relative risk is (−0.038, 0.482). Since this range includes 0, suggesting that the observed effect is not statistically significant. The interval implies that one cannot rule out the possibility that there is no effect or even a negative effect of the plea for help on response rates.
 
-From part a), the relative risk (RR) is 1.249, with a 95% confidence interval of (0.963, 1.619). This suggests that individuals who received a message with a "plea for help" were about 24.9% more likely to respond compared to those who didn't receive such a plea. However, since the confidence interval includes 1, one can't conclude that this difference is statistically significant at the 0.05 level.
+Now in part 3b) The odds ratio (OR) of responding to a message with a “plea for help” versus without a plea is 1.274. This indicates that the odds of responding are approximately 27.4% higher with the plea for help. The 95% confidence interval for the log-odds ratio is (−0.041, 0.526). Like the relative risk interval, this range also includes 0, indicating no statistically significant effect. This means that while there is a positive trend, one cannot be confident that the plea for help truly increases the odds of response.
 
-From part b), the odds ratio (OR) is 1.274, with a 95% confidence interval of (0.960, 1.692). This indicates that the odds of responding for those who received a "plea for help" were about 1.274 times the odds for those who didn't. Again, the confidence interval includes 1, suggesting that this difference is not statistically significant at the 0.05 level.
-
-So to answer the question "Does the 'plea for help' improve response rates?", I'd say while both the relative risk and odds ratio suggest a trend towards improved response rates with the "plea for help" (both being greater than 1), one can't conclusively say that it significantly improves response rates. The confidence intervals for both measures include 1, which means one can't rule out the possibility that there's no real effect.
-
-So in practical terms, there's a hint that the "plea for help" might be beneficial, with point estimates suggesting about a 25% increase in likelihood of response. However, given the statistical uncertainty, one should be cautious about claiming a definitive improvement. If I were advising on this study, I'd suggest that the results are promising enough to warrant further investigation with a larger sample size, which might help to narrow the confidence intervals and potentially reveal a statistically significant effect.
-
+Hence, from my analysis, it looks like both the relative risk and odds ratio suggest that including a plea for help in the message might boost response rates. However, since the confidence intervals (logs scale) for both measures include 0, one can't say the observed effects are statistically significant. In other words, one can't definitively conclude that the plea for help actually improves response rates based on this data alone. While the plea seems to have a positive effect, the lack of statistical significance means we should be cautious about our conclusions. We might need more data or larger studies to be sure of its impact.
 
 ## 4a) [10 points] The following table is loosely based upon a study of the impact of different types of incentives on survey response rates (Deutskens, et al., 2004). Cases were randomized to either receiver a voucher that the respondent could spend at specific online vendors, or a donation would be made on their behalf. The first question is whether vouchers produce lower or higher response rates relative to donations. Calculate the odds ratio of a voucher producing response relative to donation. Calculate the deviance (G2).
 
@@ -284,7 +276,7 @@ $= 2[17.95 - 16.72 - 15.99 + 17.24]$
 
 $= 2(2.48)$
 
-$= 4.96$
+$= 4.883$
 
 ```{r}
 # Data from the table
