@@ -1,0 +1,25 @@
+---
+title: "Homework 3: Namit Shrivastava"
+format: pdf
+editor: visual
+---
+
+## 1. The following data come from a case-control study. The cases were sampled from a registry of all lung cancer patients at a set of 6 clinics. The controls were sampled from the patients at the 6 clinics who did not have lung cancer. Each group was asked if they had ever been regular smokers. The researchers made the following claims (1a-1f) based upon these data. State whether the claim is TRUE or FALSE and explain your answer. In this case, the population of interest is those persons who visited the 6 clinics over a specified time period.
+
+| Smoker | Lung Cancer |     
+|        | Yes | No    |
+|:-------|:---:|:-----:|
+| Yes    | 126 | 100   |
+| No     | 35  | 61    |
+
+First let me define variables:
+* $n_{11} = 126$ (Smokers with lung cancer)
+* $n_{12} = 100$ (Smokers without lung cancer)
+* $n_{21} = 35$ (Non-smokers with lung cancer)
+* $n_{22} = 61$ (Non-smokers without lung cancer)
+* $N = n_{11} + n_{12} + n_{21} + n_{22} = 322$ (Total sample size)
+
+## 1. a) [5 points] The proportion with cancer in the population is estimated by (126+35)/(126+35+100+61)=0.5.
+
+True
+Reason being irrespective of whether a person smokes or not 
