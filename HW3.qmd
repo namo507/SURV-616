@@ -113,6 +113,52 @@ $Odds_{non-smoker} = \frac{n_{21}}{n_{22}} = \frac{35}{61} = 0.574$
 3) The odds ratio is:
 $OR = \frac{Odds_{smoker}}{Odds_{non-smoker}} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{126 \times 61}{100 \times 35} = 2.196$
 
-
-
 ## g) [10 points] Now you must find the 95% CI for the odds ratio from these data.
+
+Now going step by step for the calculation:
+Given values variables are:
+* $n_{11} = 126$ (Smokers with lung cancer)
+* $n_{12} = 100$ (Smokers without lung cancer)
+* $n_{21} = 35$ (Non-smokers with lung cancer)
+* $n_{22} = 61$ (Non-smokers without lung cancer)
+
+1) First, calculating OR:
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{126 \times 61}{100 \times 35} = 2.196$
+
+2) Taking natural logarithm:
+$ln(OR) = ln(2.196) = 0.787$
+
+3) Calculating standard error:
+$SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
+
+$SE_{ln(OR)} = \sqrt{\frac{1}{126} + \frac{1}{100} + \frac{1}{35} + \frac{1}{61}}$
+
+$SE_{ln(OR)} = \sqrt{0.00794 + 0.01000 + 0.02857 + 0.01639} = \sqrt{0.06290} = 0.2508$
+
+4) 95% CI for log(OR):
+$ln(OR) \pm 1.96 \times SE_{ln(OR)}$
+$0.787 \pm 1.96(0.2508) = (0.295, 1.279)$
+
+5) Therefore, 95% CI for OR:
+$(e^{0.295}, e^{1.279}) = (1.343, 3.593)$
+
+The R code for this is:
+```{r}
+# Calculate odds ratio
+or <- (126*61)/(100*35)
+
+# Calculate log(OR) and SE
+log_or <- log(or)
+se_log_or <- sqrt(1/126 + 1/100 + 1/35 + 1/61)
+
+# Calculate 95% CI
+z <- qnorm(0.975)  # for 95% CI
+ci_lower <- exp(log_or - z*se_log_or)
+ci_upper <- exp(log_or + z*se_log_or)
+
+# Print results
+cat("Odds Ratio:", round(or, 3), "\n")
+cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3))
+```
+
+So infering the results. Based on my analysis of the case-control data, I found an odds ratio of 2.196 with a 95% confidence interval of (1.343, 3.590). This tells me that smokers have approximately 2.2 times higher odds of developing lung cancer compared to non-smokers. Since the confidence interval doesn't include 1, I can say this association is statistically significant at the 0.05 level. Even at the lower bound of the interval (1.343), smokers have at least 34% higher odds of lung cancer, while the upper bound suggests the odds could be as high as 3.59 times higher. This provides strong evidence for a meaningful relationship between smoking and lung cancer risk in this clinic population. The relatively wide confidence interval (spanning from about 1.3 to 3.6) suggests some uncertainty in the precise magnitude of the association, though the direction and significance of the effect are clear.
