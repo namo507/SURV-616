@@ -183,3 +183,38 @@ Here, incidence = $\frac{250 + 125}{300,000} = 0.00125$ or 0.125%, which is rare
 Now what one needs to remember is a big assumption is to be made that the study population is representative of the general population, and that the proportion of smokers and non-smokers with bladder cancer observed in this study mirrors the actual risk in the general population.
 
 ## 2. b) [15 points] Please estimate the attributable risk for the population of having bladder cancer due to smoking. What is a 95% confidence interval around the estimated attributable risk for the population?
+
+Ok so the attributable risk is calculated as the difference in the incidence of bladder cancer between smokers and non-smokers.
+
+AR = P(E) * (RR-1)
+
+where P(E) is the proportion of the population exposed to the risk factor (smoking), and RR is the relative risk.
+
+So to estimate attributable risk from retrospective (case-control) data, one must assume the disease is rare in the population. This allows the odds ratio (OR) to approximate the relative risk (RR), enabling valid estimation of attributable risk parameters.
+
+1) First, calculating odds ratio:
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4$
+
+```{r}
+n11 <- 250
+n12 <- 99750
+n21 <- 125
+n22 <- 199875
+N <- n11 + n12 + n21 + n22
+
+# Calculating OR
+or <- (n11*n22)/(n12*n21)
+or
+```
+
+2) Calculate proportion of population exposed (smoking prevalence):
+$p_e = \frac{n_{11} + n_{12}}{N} = \frac{100,000}{300,000} = \frac{1}{3}$
+
+3) Population Attributable Risk (PAR):
+$PAR = \frac{p_e(OR-1)}{1 + p_e(OR-1)}$
+
+$PAR = \frac{\frac{1}{3}(4-1)}{1 + \frac{1}{3}(4-1)} = \frac{1}{2} = 0.5$ or 50%
+
+4) For 95% CI:
+First, calculate SE of log(OR):
+$SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
