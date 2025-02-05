@@ -29,6 +29,17 @@ total <- 126 + 35 + 100 + 61
 p_cancer <- cancer_yes/total
 cat("Proportion with cancer(sampled):", round(p_cancer, 3))
 ```
+
 The reason this is False is because it is a case-control study where cases and controls were sampled separately. The proportion 0.5 is by design and doesn't estimate the true population proportion. In simpler terms, the provided calculation estimates the proportion of lung cancer in the sample, not the population.  These case-control studies are designed to oversample cases (people with the disease) to have enough data for analysis. So the sample proportions do not reflect the population proportions. Hence one cannot estimate the population prevalence of lung cancer from a case-control study.
 
+## b) [5 points] The proportion of the population that smokes is estimated by (126+100)/ (126+35+100+61)=0.702.
 
+False
+$\hat{p}{smoker} = \frac{n{11} + n_{12}}{N} = \frac{126 + 100}{322} = 0.702$
+```{r}
+smokers <- 126 + 100
+p_smokers <- smokers/total
+cat("Proportion of smokers(sampled):", round(p_smokers, 3))
+```
+
+Similar to 1a previously, this calculation estimates the proportion of smokers in the sample, not the population.  The sampling scheme of a case-control study distorts the proportions of exposures (like smoking) in the sample compared to the population.
