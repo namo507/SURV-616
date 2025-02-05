@@ -207,13 +207,22 @@ or <- (n11*n22)/(n12*n21)
 or
 ```
 
-2) Calculate proportion of population exposed (smoking prevalence):
-$p_e = \frac{n_{11} + n_{12}}{N} = \frac{100,000}{300,000} = \frac{1}{3}$
+2) Calculating proportion of population exposed (smoking prevalence):
 
-3) Population Attributable Risk (PAR):
+$p_e = \frac{n_{11} + n_{12}}{N} = \frac{100,000}{300,000} = \frac{1}{3}$
+```{r}
+pe <- (n11 + n12)/N
+pe
+```
+
+3) Population Attributable Risk (PAR) will be given as:
 $PAR = \frac{p_e(OR-1)}{1 + p_e(OR-1)}$
 
 $PAR = \frac{\frac{1}{3}(4-1)}{1 + \frac{1}{3}(4-1)} = \frac{1}{2} = 0.5$ or 50%
+```{r}
+par <- (pe*(or-1))/(1 + pe*(or-1))
+par
+```
 
 4) For 95% CI:
 First, calculate SE of log(OR):
