@@ -162,3 +162,24 @@ cat("95% CI:", round(ci_lower, 3), "-", round(ci_upper, 3))
 ```
 
 So infering the results. Based on my analysis of the case-control data, I found an odds ratio of 2.196 with a 95% confidence interval of (1.343, 3.590). This tells me that smokers have approximately 2.2 times higher odds of developing lung cancer compared to non-smokers. Since the confidence interval doesn't include 1, I can say this association is statistically significant at the 0.05 level. Even at the lower bound of the interval (1.343), smokers have at least 34% higher odds of lung cancer, while the upper bound suggests the odds could be as high as 3.59 times higher. This provides strong evidence for a meaningful relationship between smoking and lung cancer risk in this clinic population. The relatively wide confidence interval (spanning from about 1.3 to 3.6) suggests some uncertainty in the precise magnitude of the association, though the direction and significance of the effect are clear.
+
+
+
+## 2. The following data come from a retrospective study of the association between smoking and bladder cancer.
+| Smoker | Bladder Cancer |     
+|        | Yes | No       |
+|:-------|:---:|:--------:|
+| Yes    | 250 | 99,750   |
+| No     | 125 | 199,875  |
+
+## 2. a) [5 points] Given that we cannot estimate the relative risk from these data, what assumption do we need to make in order to estimate the attributable risk from these data?
+
+So, to estimate attributable risk from retrospective (case-control) data, one must assume the disease is rare in the population. This allows the odds ratio (OR) to approximate the relative risk (RR), enabling valid estimation of attributable risk parameters.
+
+$OR \approx RR$ when disease is rare (i.e., when incidence < 10%)
+
+Here, incidence = $\frac{250 + 125}{300,000} = 0.00125$ or 0.125%, which is rare.
+
+Now what one needs to remember is a big assumption is to be made that the study population is representative of the general population, and that the proportion of smokers and non-smokers with bladder cancer observed in this study mirrors the actual risk in the general population.
+
+## 2. b) [15 points] Please estimate the attributable risk for the population of having bladder cancer due to smoking. What is a 95% confidence interval around the estimated attributable risk for the population?
