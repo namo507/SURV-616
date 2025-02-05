@@ -22,6 +22,7 @@ First let me define variables:
 ## 1. a) [5 points] The proportion with cancer in the population is estimated by (126+35)/(126+35+100+61)=0.5.
 
 False
+
 $\hat{p}_{cancer} = \frac{n_{11} + n_{21}}{N} = \frac{126 + 35}{322} = 0.5$
 ```{r}
 cancer_yes <- 126 + 35
@@ -35,6 +36,7 @@ The reason this is False is because it is a case-control study where cases and c
 ## b) [5 points] The proportion of the population that smokes is estimated by (126+100)/ (126+35+100+61)=0.702.
 
 False
+
 $\hat{p}{smoker} = \frac{n{11} + n_{12}}{N} = \frac{126 + 100}{322} = 0.702$
 ```{r}
 smokers <- 126 + 100
@@ -43,3 +45,44 @@ cat("Proportion of smokers(sampled):", round(p_smokers, 3))
 ```
 
 Similar to 1a previously, this calculation estimates the proportion of smokers in the sample, not the population.  The sampling scheme of a case-control study distorts the proportions of exposures (like smoking) in the sample compared to the population.
+
+## c) [5 points] The probability of having lung cancer among Smokers is estimated by 126/226=0.558.
+
+True
+
+$\hat{p}{cancer|smoker} = \frac{n{11}}{n_{11} + n_{12}} = \frac{126}{226} = 0.558$
+```{r}
+cancer_smokers <- 126
+total_smokers <- 226
+cancer_given_smoker <- cancer_smokers / total_smokers
+cat("P(cancer|smoker):", round(cancer_given_smoker, 3))
+```
+
+So assuming that the this question part does not talk about the population but now talking about this sample case study, so this calculation is correct for estimating the probability of having lung cancer among smokers in the study sample. One can divide the number of smokers with lung cancer (126) by the total number of smokers (126 + 100 = 226).
+In layman’s terms, if one looks only at the smokers in the study, approximately 55.8% of them have lung cancer.
+
+
+## d) [5 points] The probability of having lung cancer among Non-Smokers is estimated by 35/96=0.365.
+
+True
+
+$\hat{p}{cancer|non-smoker} = \frac{n{21}}{n_{21} + n_{22}} = \frac{35}{96} = 0.365$
+```{r}
+cancer_nonsmokers <- 35
+total_nonsmokers <- 96
+cancer_given_nonsmoker <- cancer_nonsmokers / total_nonsmokers
+cat("P(cancer|non-smoker):", round(cancer_given_nonsmoker, 3))
+```
+
+Again, assuming that the this question part does not talk about the population but now talking about this sample case study, this calculation is correct for estimating the probability of having lung cancer among non-smokers in the study sample. One can divide the number of non-smokers with lung cancer (35) by the total number of non-smokers (35 + 61 = 96).
+In layman’s terms, if one looks only at the non-smokers in this study, approximately 36.5% of them have lung cancer.
+
+## e) [5 points] The relative risk of having lung cancer, Smokers relative to non-Smokers is 0.558/0.365=1.529.
+
+False
+
+
+
+
+## f) [5 points] The odds ratio of having lung cancer for smokers relative to non-smokers is (12661)/(35100)=2.196.
+## g) [10 points] Now you must find the 95% CI for the odds ratio from these data.
