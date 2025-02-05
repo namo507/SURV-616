@@ -431,4 +431,6 @@ cat("95% CI for OR:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
 cat("95% CI for AR:", round(AR_lower, 3), "-", round(AR_upper, 3))
 ```
 
+Based on my analysis of this prospective study data using R code, I found that baldness appears to have a moderate association with heart disease. The odds ratio of 1.441 suggests that individuals with baldness have about 44% higher odds of developing heart disease compared to those without baldness. I can be quite confident about this association because the 95% confidence interval (1.177, 1.764) doesn't include 1, indicating statistical significance.
 
+Looking at the attributable risk confidence interval (0.012, 0.051), I can say that between 1.2% and 5.1% of heart disease cases in the population might be attributable to baldness. Interestingly, even at the lower bound of 1.2%, given how common heart disease is, this could represent a substantial number of cases that might be associated with baldness as a risk factor.
