@@ -35,9 +35,10 @@ The reason this is False is because it is a case-control study where cases and c
 
 ## b) [5 points] The proportion of the population that smokes is estimated by (126+100)/ (126+35+100+61)=0.702.
 
+$\hat{p}{smoker} = \frac{n{11} + n_{12}}{N} = \frac{126 + 100}{322} = 0.702$
+
 False
 
-$\hat{p}{smoker} = \frac{n{11} + n_{12}}{N} = \frac{126 + 100}{322} = 0.702$
 ```{r}
 smokers <- 126 + 100
 p_smokers <- smokers/total
@@ -48,9 +49,10 @@ Similar to 1a previously, this calculation estimates the proportion of smokers i
 
 ## c) [5 points] The probability of having lung cancer among Smokers is estimated by 126/226=0.558.
 
+$\hat{p}{cancer|smoker} = \frac{n{11}}{n_{11} + n_{12}} = \frac{126}{226} = 0.558$
+
 True
 
-$\hat{p}{cancer|smoker} = \frac{n{11}}{n_{11} + n_{12}} = \frac{126}{226} = 0.558$
 ```{r}
 cancer_smokers <- 126
 total_smokers <- 226
@@ -64,9 +66,10 @@ In layman’s terms, if one looks only at the smokers in the study, approximatel
 
 ## d) [5 points] The probability of having lung cancer among Non-Smokers is estimated by 35/96=0.365.
 
+$\hat{p}{cancer|non-smoker} = \frac{n{21}}{n_{21} + n_{22}} = \frac{35}{96} = 0.365$
+
 True
 
-$\hat{p}{cancer|non-smoker} = \frac{n{21}}{n_{21} + n_{22}} = \frac{35}{96} = 0.365$
 ```{r}
 cancer_nonsmokers <- 35
 total_nonsmokers <- 96
@@ -79,10 +82,37 @@ In layman’s terms, if one looks only at the non-smokers in this study, approxi
 
 ## e) [5 points] The relative risk of having lung cancer, Smokers relative to non-Smokers is 0.558/0.365=1.529.
 
+$RR = \frac{\hat{p}{cancer|smoker}}{\hat{p}{cancer|non-smoker}} = \frac{0.558}{0.365} = 1.529$
+
 False
 
+```{r}
+relative_risk <- cancer_given_smoker / cancer_given_nonsmoker
+cat("Relative Risk:", round(relative_risk, 3))
+```
 
-
+In a case-control study, one cannot directly calculate the relative risk because the incidence rates in the exposed and unexposed groups are not available. Since, in class theory, I remember that Relative risk is the ratio of the probability of disease in the exposed group to the probability of disease in the unexposed group.  Now simply, because these case-control studies don't give the true population probabilities of having the disease, one can't calculate the relative risk.
 
 ## f) [5 points] The odds ratio of having lung cancer for smokers relative to non-smokers is (12661)/(35100)=2.196.
+
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{126 \times 61}{100 \times 35} = 2.196$
+
+True
+```{r}
+OR <- (126*61)/(100*35)
+cat("Odds Ratio:", round(OR, 3))
+```
+
+Now the Odds ratio is valid for case-control studies as it doesn't require probability estimation. So the correct calculation steps will be :
+1) First, calculating odds for smokers:
+$Odds_{smoker} = \frac{n_{11}}{n_{12}} = \frac{126}{100} = 1.26$
+
+2) Calculating odds for non-smokers:
+$Odds_{non-smoker} = \frac{n_{21}}{n_{22}} = \frac{35}{61} = 0.574$
+
+3) The odds ratio is:
+$OR = \frac{Odds_{smoker}}{Odds_{non-smoker}} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{126 \times 61}{100 \times 35} = 2.196$
+
+
+
 ## g) [10 points] Now you must find the 95% CI for the odds ratio from these data.
