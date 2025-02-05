@@ -278,4 +278,34 @@ Based on my analysis of the bladder cancer data, I found that smoking has a subs
 | Yes      | 127 | 1,224  |
 | No       | 548 | 7,611  |
 
+## 3. a) [5 points] Please graph the proportion that has heart disease in each group (i.e. bald and not).
+
+```{r}
+```{r}
+# Defining data
+bald_yes <- 127
+bald_no <- 1224
+notbald_yes <- 548
+notbald_no <- 7611
+
+# Calculating proportions
+prop_bald <- bald_yes/(bald_yes + bald_no)
+prop_notbald <- notbald_yes/(notbald_yes + notbald_no)
+
+# Creating bar plot
+library(ggplot2)
+
+data <- data.frame(
+  Group = c("Bald", "Not Bald"),
+  Proportion = c(prop_bald, prop_notbald)
+)
+
+ggplot(data, aes(x=Group, y=Proportion)) +
+  geom_bar(stat="identity", fill="skyblue") +
+  labs(title="Proportion of Heart Disease by Baldness Status",
+       y="Proportion with Heart Disease") +
+  theme_minimal()
+```
+
+## 3. b) [15 points] Please estimate the attributable risk for the population of having heart disease due to baldness. What is a 95% confidence interval around this estimate?
 
