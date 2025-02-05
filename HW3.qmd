@@ -193,7 +193,7 @@ where P(E) is the proportion of the population exposed to the risk factor (smoki
 So to estimate attributable risk from retrospective (case-control) data, one must assume the disease is rare in the population. This allows the odds ratio (OR) to approximate the relative risk (RR), enabling valid estimation of attributable risk parameters.
 
 1) First, calculating odds ratio:
-$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4$
+$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4.01$
 
 ```{r}
 n11 <- 250
@@ -225,5 +225,57 @@ par
 ```
 
 4) For 95% CI:
-First, calculate SE of log(OR):
+Step 1: Calculate $SE_{ln(OR)}$
 $SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
+
+$SE_{ln(OR)} = \sqrt{\frac{1}{250} + \frac{1}{99,750} + \frac{1}{125} + \frac{1}{199,875}}$
+
+$SE_{ln(OR)} = \sqrt{0.004 + 0.00001 + 0.008 + 0.000005}$
+
+$SE_{ln(OR)} = \sqrt{0.012015} = 0.1096$
+
+Step 2: Calculate 95% CI for log(OR)
+$ln(OR) = ln(4) = 1.386$
+
+$ln(OR) \pm 1.96 \times SE_{ln(OR)}$
+$1.386 \pm 1.96(0.1096)$
+$1.386 \pm 0.215$
+$(1.171, 1.601)$
+
+Step 3: Convert back to OR scale
+$CI_{OR} = (e^{1.171}, e^{1.601})$
+$CI_{OR} = (3.225, 4.957)$
+
+Step 4: Calculate PAR CI using OR CI
+$PAR_{lower} = \frac{\frac{1}{3}(3.225-1)}{1 + \frac{1}{3}(3.225-1)} = 0.427$
+
+$PAR_{upper} = \frac{\frac{1}{3}(4.957-1)}{1 + \frac{1}{3}(4.957-1)} = 0.569$
+
+Therefore, 95% CI for PAR = (0.427, 0.569)
+```{r}
+# Calculating CI for PAR
+log_or <- log(or)
+se_log_or <- sqrt(1/n11 + 1/n12 + 1/n21 + 1/n22)
+ci_or_lower <- exp(log_or - 1.96*se_log_or)
+ci_or_upper <- exp(log_or + 1.96*se_log_or)
+
+# PAR CI
+par_lower <- (pe*(ci_or_lower-1))/(1 + pe*(ci_or_lower-1))
+par_upper <- (pe*(ci_or_upper-1))/(1 + pe*(ci_or_upper-1))
+
+# Print results
+cat("OR:", round(or, 2), "\n")
+cat("PAR:", round(par, 3), "\n")
+cat("95% CI for PAR:", round(par_lower, 3), "-", round(par_upper, 3))
+```
+
+Based on my analysis of the bladder cancer data, I found that smoking has a substantial impact on bladder cancer risk in this population. The odds ratio of 4.01 indicates that smokers have about 4 times the odds of developing bladder cancer compared to non-smokers. More importantly, the Population Attributable Risk (PAR) of 0.501 suggests that approximately 50.1% of bladder cancer cases in this population could potentially be prevented by eliminating smoking exposure. The 95% confidence interval for the PAR (0.427, 0.569) tells me that I can be 95% confident that the true proportion of bladder cancer cases attributable to smoking lies between 42.7% and 56.9%. This is a remarkably wide impact - even at the lower bound of our estimate, smoking accounts for over 40% of bladder cancer cases in this population. These findings strongly support the public health significance of smoking cessation programs for bladder cancer prevention.
+
+## 3.The following data come from a fictional prospective study of the association between baldness and heart disease. The sample was randomly selected from the population and then followed to see if they developed baldness and/or heart disease.
+| Baldness | Heart Disease |     
+|         | Yes | No      |
+|:---------|:---:|:------:|
+| Yes      | 127 | 1,224  |
+| No       | 548 | 7,611  |
+
+
