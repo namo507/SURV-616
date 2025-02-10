@@ -190,91 +190,55 @@ Now what one needs to remember is a big assumption is to be made that the study 
 
 ## 2. b) [15 points] Please estimate the attributable risk for the population of having bladder cancer due to smoking. What is a 95% confidence interval around the estimated attributable risk for the population?
 
-Ok so the attributable risk is calculated as the difference in the incidence of bladder cancer between smokers and non-smokers.
+## 2. b) Population Attributable Risk Calculation
 
-AR = P(E) * (RR-1)
+1) First I will calculate odds ratio (R̂):
+$\hat{R} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4.01$
 
-where P(E) is the proportion of the population exposed to the risk factor (smoking), and RR is the relative risk.
+2) Then calculating attributable risk among exposed:
+$\hat{A}_{Exposed} = \frac{\hat{R} - 1}{\hat{R}} = \frac{4.01 - 1}{4.01} = 0.750$ or 75%
 
-So to estimate attributable risk from retrospective (case-control) data, one must assume the disease is rare in the population. This allows the odds ratio (OR) to approximate the relative risk (RR), enabling valid estimation of attributable risk parameters.
+3) Calculating population attributable risk:
+$\hat{A}_{pop} = \frac{n_{11}n_{22} - n_{12}n_{21}}{n_{22}(n_{11} + n_{21})} = \frac{250 \times 199,875 - 99,750 \times 125}{199,875(250 + 125)} = 0.500$ or 50%
 
-1) First, calculating odds ratio:
-$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4.01$
+4) Calculating variance for confidence interval:
+$V(ln(1-\hat{A}_{pop})) = \frac{n_{11}}{n_{21}(n_{11}+n_{21})} + \frac{n_{12}}{n_{22}(n_{12}+n_{22})}$
+
+$V(ln(1-\hat{A}_{pop})) = \frac{250}{125(250+125)} + \frac{99,750}{199,875(99,750+199,875)} = 0.005$
+
+5) Calculating finally the 95% CI:
+$CI = 1 - exp(ln(1-\hat{A}_{pop}) \pm 1.96\sqrt{V(ln(1-\hat{A}_{pop}))})$
+$CI = (0.423, 0.567)$
 
 ```{r}
-n11 <- 250
-n12 <- 99750
-n21 <- 125
-n22 <- 199875
-N <- n11 + n12 + n21 + n22
+# Defining variables
+a <- 250
+b <- 99750
+c <- 125
+d <- 199875
 
-# Calculating OR
-or <- (n11*n22)/(n12*n21)
-or
+# Calculating R̂
+r_hat <- (a*d)/(b*c)
+
+# Calculating exposed attributable risk
+a_exposed <- (r_hat-1)/r_hat
+
+# Calculating population attributable risk
+a_pop <- (a*d-b*c)/(d*(a+c))
+
+# Calculating variance
+v_ln <- a/(c*(a+c)) + b/(d*(b+d))
+
+# Calculating CI
+lcl <- 1-exp(log(1-a_pop) + 1.96*sqrt(v_ln))
+ucl <- 1-exp(log(1-a_pop) - 1.96*sqrt(v_ln))
+
+cat('Population Attributable Risk:', round(a_pop, 3), '\n')
+cat('95% CI:', round(lcl, 3), '-', round(ucl, 3))
 ```
 
-2) Calculating proportion of population exposed (smoking prevalence):
+Ok so based on the calculation, the Population Attributable Risk (PAR) of 0.5 means that about 50% of bladder cancer cases in the population can be attributed to smoking. Now, the 95% confidence interval of 0.423 to 0.567 indicates that one is 95% confident the true proportion of bladder cancer cases due to smoking lies between 42.3% and 56.7%. This tells me that smoking has a significant impact on the incidence of bladder cancer in this population. To put it simply, if one could eliminate smoking, then it could potentially reduce bladder cancer cases by approximately half.
 
-$p_e = \frac{n_{11} + n_{12}}{N} = \frac{100,000}{300,000} = \frac{1}{3}$
-```{r}
-pe <- (n11 + n12)/N
-pe
-```
-
-3) Population Attributable Risk (PAR) will be given as:
-$PAR = \frac{p_e(OR-1)}{1 + p_e(OR-1)}$
-
-$PAR = \frac{\frac{1}{3}(4-1)}{1 + \frac{1}{3}(4-1)} = \frac{1}{2} = 0.5$ or 50%
-```{r}
-par <- (pe*(or-1))/(1 + pe*(or-1))
-par
-```
-
-4) For 95% CI:
-Step 1: Calculate $SE_{ln(OR)}$
-$SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
-
-$SE_{ln(OR)} = \sqrt{\frac{1}{250} + \frac{1}{99,750} + \frac{1}{125} + \frac{1}{199,875}}$
-
-$SE_{ln(OR)} = \sqrt{0.004 + 0.00001 + 0.008 + 0.000005}$
-
-$SE_{ln(OR)} = \sqrt{0.012015} = 0.1096$
-
-Step 2: Calculate 95% CI for log(OR)
-$ln(OR) = ln(4) = 1.386$
-
-$ln(OR) \pm 1.96 \times SE_{ln(OR)}$
-$1.386 \pm 1.96(0.1096)$
-$1.386 \pm 0.215$
-$(1.171, 1.601)$
-
-Step 3: Convert back to OR scale
-$CI_{OR} = (e^{1.171}, e^{1.601})$
-$CI_{OR} = (3.225, 4.957)$
-
-Step 4: Calculate PAR CI using OR CI
-$PAR_{lower} = \frac{\frac{1}{3}(3.225-1)}{1 + \frac{1}{3}(3.225-1)} = 0.427$
-
-$PAR_{upper} = \frac{\frac{1}{3}(4.957-1)}{1 + \frac{1}{3}(4.957-1)} = 0.569$
-
-Therefore, 95% CI for PAR = (0.427, 0.569)
-```{r}
-# Calculating CI for PAR
-log_or <- log(or)
-se_log_or <- sqrt(1/n11 + 1/n12 + 1/n21 + 1/n22)
-ci_or_lower <- exp(log_or - 1.96*se_log_or)
-ci_or_upper <- exp(log_or + 1.96*se_log_or)
-
-# PAR CI
-par_lower <- (pe*(ci_or_lower-1))/(1 + pe*(ci_or_lower-1))
-par_upper <- (pe*(ci_or_upper-1))/(1 + pe*(ci_or_upper-1))
-
-cat("OR:", round(or, 2), "\n")
-cat("PAR:", round(par, 3), "\n")
-cat("95% CI for PAR:", round(par_lower, 3), "-", round(par_upper, 3))
-```
-
-Based on my analysis of the bladder cancer data, I found that smoking has a substantial impact on bladder cancer risk in this population. The odds ratio of 4.01 indicates that smokers have about 4 times the odds of developing bladder cancer compared to non-smokers. More importantly, the Population Attributable Risk (PAR) of 0.501 suggests that approximately 50.1% of bladder cancer cases in this population could potentially be prevented by eliminating smoking exposure. The 95% confidence interval for the PAR (0.427, 0.569) tells me that I can be 95% confident that the true proportion of bladder cancer cases attributable to smoking lies between 42.7% and 56.9%. This is a remarkably wide impact - even at the lower bound of our estimate, smoking accounts for over 40% of bladder cancer cases in this population. These findings strongly support the public health significance of smoking cessation programs for bladder cancer prevention.
 
 ## 3.The following data come from a fictional prospective study of the association between baldness and heart disease. The sample was randomly selected from the population and then followed to see if they developed baldness and/or heart disease.
 | Baldness | Heart Disease |     
@@ -314,130 +278,3 @@ ggplot(data, aes(x=Group, y=Proportion)) +
 
 ## 3. b) [15 points] Please estimate the attributable risk for the population of having heart disease due to baldness. What is a 95% confidence interval around this estimate?
 
-Ok so first let me define the variables:
-* $n_{11} = 127$ (Bald with heart disease)
-* $n_{12} = 1,224$ (Bald without heart disease)
-* $n_{21} = 548$ (Not bald with heart disease)
-* $n_{22} = 7,611$ (Not bald without heart disease)
-* $N = 9,510$ (Total sample size)
-
-```{r}
-# Defining data
-bald_yes <- 127
-bald_no <- 1224
-notbald_yes <- 548
-notbald_no <- 7611
-total <- bald_yes + bald_no + notbald_yes + notbald_no
-```
-
-1) First, calculating risks (incidence rates) for each group:
-
-Risk for bald or Incidence in Bald (Exposed): 
-$I_e = R_1 = \frac{n_{11}}{n_{11} + n_{12}} = \frac{127}{1,351} = 0.094$ or 9.4%
-
-Risk for not bald or Incidence in Not Bald (Unexposed):
-$I_u = R_0 = \frac{n_{21}}{n_{21} + n_{22}} = \frac{548}{8,159} = 0.067$ or 6.7%
-```{r}
-# Calculating risks
-risk_bald <- bald_yes/(bald_yes + bald_no)
-risk_notbald <- notbald_yes/(notbald_yes + notbald_no)
-risk_bald
-risk_notbald
-```
-
-2) Attributable Risk calculation (not considering the population for now):
-$AR = I_e - I_u = R_1 - R_0$
-$AR = 0.094 - 0.067 = 0.027$ or 2.7%
-
-This means the excess risk of heart disease attributable to baldness is 2.7%.
-
-3) Calculating Risk Ratio (RR):
-$RR = \frac{R_1}{R_0} = \frac{0.094}{0.067} = 1.40$
-
-4) Calculating proportion exposed (prevalence of baldness):
-$p_e = \frac{n_{11} + n_{12}}{N} = \frac{1,351}{9,510} = 0.142$
-```{r}
-# Calculating RR and pe
-rr <- risk_bald/risk_notbald
-pe <- (bald_yes + bald_no)/total
-rr
-pe
-```
-
-5) Calculating Population Attributable Risk:
-$PAR = \frac{p_e(RR-1)}{1 + p_e(RR-1)}$
-$PAR = \frac{0.142(1.40-1)}{1 + 0.142(1.40-1)} = 0.054$ or 5.4%
-```{r}
-# Calculating PAR
-par <- (pe*(rr-1))/(1 + pe*(rr-1))
-par
-```
-
-6) For 95% CI calculation:
-
-First, calculate Odds Ratio:
-$OR = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{127 \times 7,611}{1,224 \times 548} = \frac{967,597}{670,752} = 1.442$
-
-Taking natural logarithm:
-$ln(OR) = ln(1.442) = 0.366$
-
-Standard Error of log(OR):
-$SE_{ln(OR)} = \sqrt{\frac{1}{n_{11}} + \frac{1}{n_{12}} + \frac{1}{n_{21}} + \frac{1}{n_{22}}}$
-
-$SE_{ln(OR)} = \sqrt{\frac{1}{127} + \frac{1}{1,224} + \frac{1}{548} + \frac{1}{7,611}} = \sqrt{0.109} = 0.109$
-
-95% CI for log(OR):
-$ln(OR) \pm 1.96 \times SE_{ln(OR)}$
-$0.366 \pm 1.96(0.109) = (0.152, 0.580)$
-
-95% CI for OR:
-$(e^{0.152}, e^{0.580}) = (1.164, 1.786)$
-
-Now calculating incidence in unexposed (Iu):
-$I_u = \frac{n_{21}}{n_{21} + n_{22}} = \frac{548}{548 + 7,611} = \frac{548}{8,159} = 0.067$
-
-Calculating AR bounds:
-$AR_{lower} = I_u(OR_{lower} - 1)$
-$AR_{lower} = 0.067(1.164 - 1)$
-$AR_{lower} = 0.067(0.164) = 0.012$ or 1.2%
-
-$AR_{upper} = I_u(OR_{upper} - 1)$
-$AR_{upper} = 0.067(1.786 - 1)$
-$AR_{upper} = 0.067(0.786) = 0.051$ or 5.1%
-
-Therefore, 95% CI for AR: (0.012, 0.051) or (1.2%, 5.1%)
-
-```{r}
-# Simplifying variables
-a <- bald_yes      # 127
-b <- bald_no       # 1224
-c <- notbald_yes   # 548
-d <- notbald_no    # 7611
-
-# Calculating OR
-OR <- (a * d)/(b * c)
-log_OR <- log(OR)
-
-# Calculating SE
-SE_log_OR <- sqrt(1/a + 1/b + 1/c + 1/d)
-
-# Calculating 95% CI
-z <- qnorm(0.975)
-ci_lower <- exp(log_OR - z*SE_log_OR)
-ci_upper <- exp(log_OR + z*SE_log_OR)
-
-# Calculating incidence in unexposed
-Iu <- c/(c + d)
-
-# Calculating AR bounds
-AR_lower <- Iu * (ci_lower - 1)
-AR_upper <- Iu * (ci_upper - 1)
-
-cat("Odds Ratio:", round(OR, 3), "\n")
-cat("95% CI for OR:", round(ci_lower, 3), "-", round(ci_upper, 3), "\n")
-cat("95% CI for AR:", round(AR_lower, 3), "-", round(AR_upper, 3))
-```
-
-Based on my analysis of this prospective study data using R code, I found that baldness appears to have a moderate association with heart disease. The odds ratio of 1.441 suggests that individuals with baldness have about 44% higher odds of developing heart disease compared to those without baldness. I can be quite confident about this association because the 95% confidence interval (1.177, 1.764) doesn't include 1, indicating statistical significance.
-
-Looking at the attributable risk confidence interval (0.012, 0.051), I can say that between 1.2% and 5.1% of heart disease cases in the population might be attributable to baldness. Interestingly, even at the lower bound of 1.2%, given how common heart disease is, this could represent a substantial number of cases that might be associated with baldness as a risk factor.
