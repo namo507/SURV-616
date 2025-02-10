@@ -64,9 +64,7 @@ Now the probability calculation $\frac{126}{226} = 0.558$ is not valid because t
 
 $E\left\{\frac{n_{11}}{n_{11}+n_{12}}\right\} \neq \frac{N_{11}}{N_{11}+N_{12}}$
 
-This is because cases (lung cancer patients) were deliberately oversampled by design. The sampling was based on disease status (outcome) rather than exposure status (smoking), which distorts the probability estimates. Therefore, we cannot estimate the true probability of lung cancer among smokers from these data.
-
-In simpler terms: Since we artificially selected equal numbers of cases and controls rather than taking a random sample from the population, the calculated proportions don't reflect the true disease probabilities in the population.
+This is because cases (lung cancer patients) were deliberately oversampled by design. The sampling was based on disease status (outcome) rather than exposure status (smoking), which distorts the probability estimates. Therefore, one cannot estimate the true probability of lung cancer among smokers from these data.
 
 
 ## d) [5 points] The probability of having lung cancer among Non-Smokers is estimated by 35/96=0.365.
@@ -82,7 +80,11 @@ cancer_given_nonsmoker <- cancer_nonsmokers / total_nonsmokers
 cat("P(cancer|non-smoker):", round(cancer_given_nonsmoker, 3))
 ```
 
-$E\left\{\frac{n_{21}}{n_{21}+n_{22}}\right\} \neq \frac{N_{21}}{N_{21}+N_{22}}$
+The probability calculation $\frac{35}{96} = 0.365$ is not valid because again this is a case-control study. In case-control studies, the expected value of the sample proportion does not equal the true population proportion since
+
+$E\left{\frac{n_{21}}{n_{21}+n_{22}}\right} \neq \frac{N_{21}}{N_{21}+N_{22}}$
+
+So in simpler terms, this is because cases (lung cancer patients) were deliberately oversampled by design. The sampling was based on disease status (outcome) rather than exposure status (smoking), which distorts the probability estimates. Therefore, one cannot estimate the true probability of lung cancer among non-smokers from these data. Just like in part c), case-control studies cannot be used to estimate disease probabilities directly.
 
 
 ## e) [5 points] The relative risk of having lung cancer, Smokers relative to non-Smokers is 0.558/0.365=1.529.
