@@ -190,7 +190,13 @@ Now what one needs to remember is a big assumption is to be made that the study 
 
 ## 2. b) [15 points] Please estimate the attributable risk for the population of having bladder cancer due to smoking. What is a 95% confidence interval around the estimated attributable risk for the population?
 
-## 2. b) Population Attributable Risk Calculation
+First, let me define the variables:
+* $n_{11} = 250$ (Smokers with bladder cancer)
+* $n_{12} = 99,750$ (Smokers without bladder cancer) 
+* $n_{21} = 125$ (Non-smokers with bladder cancer)
+* $n_{22} = 199,875$ (Non-smokers without bladder cancer)
+* $N = n_{11} + n_{12} + n_{21} + n_{22} = 300,000$ (Total sample size)
+
 
 1) First I will calculate odds ratio (R̂):
 $\hat{R} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{250 \times 199,875}{99,750 \times 125} = 4.01$
@@ -278,3 +284,52 @@ ggplot(data, aes(x=Group, y=Proportion)) +
 
 ## 3. b) [15 points] Please estimate the attributable risk for the population of having heart disease due to baldness. What is a 95% confidence interval around this estimate?
 
+First, let me define the variables:
+* $n_{11} = 127$ (Bald with heart disease)
+* $n_{12} = 1,224$ (Bald without heart disease)
+* $n_{21} = 548$ (Not bald with heart disease)
+* $n_{22} = 7,611$ (Not bald without heart disease)
+
+1) Calculatinf Risk Ratio ($\hat{R}$):
+$\hat{R} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{127 \times 7,611}{1,224 \times 548} = 1.441$
+
+2) Calculate Attributable Risk for Exposed:
+$\hat{A}_{Exposed} = \frac{\hat{R} - 1}{\hat{R}} = \frac{1.441 - 1}{1.441} = 0.306$ or 30.6%
+
+3) Calculate Population Attributable Risk:
+$\hat{A}_{pop} = \frac{n_{11}n_{22} - n_{12}n_{21}}{(n_{11} + n_{21})(n_{21} + n_{22})}$
+$= \frac{127 \times 7,611 - 1,224 \times 548}{(127 + 548)(548 + 7,611)} = 0.0537$ or 5.37%
+
+4) Calculate variance for confidence interval:
+$V(ln(1-\hat{A}_{pop})) = \frac{n_{12} + \hat{A}_{pop}(n_{11} + n_{22})}{N}$
+where $N = n_{11} + n_{12} + n_{21} + n_{22}$
+
+$V(ln(1-\hat{A}_{pop})) = \frac{1,224 + 0.0537(127 + 7,611)}{9,510} = 0.172$
+
+5) Calculate 95% CI:
+$CI = 1 - exp(ln(1-\hat{A}_{pop}) \pm 1.96\sqrt{V(ln(1-\hat{A}_{pop}))})$
+$= (-1.135, 0.581)$
+
+```{r}
+# Define variables
+a <- 127
+b <- 1224
+c <- 548
+d <- 7611
+
+# Calculate risk ratio
+r_hat <- (a*d)/(b*c)
+
+# Calculate attributable risks
+a_exposed <- (r_hat-1)/r_hat
+a_pop <- (a*d-b*c)/((a+c)*(c+d))
+
+# Calculate variance and CI
+v_ln <- (b + a_pop*(a+d))/(a+b+c+d)
+lcl <- 1-exp(log(1-a_pop) + 1.96*sqrt(v_ln))
+ucl <- 1-exp(log(1-a_pop) - 1.96*sqrt(v_ln))
+
+cat("Risk Ratio:", round(r_hat, 3), "\n")
+cat("Population Attributable Risk:", round(a_pop, 3), "\n")
+cat("95% CI for AR:", round(lcl, 3), "-", round(ucl, 3))
+```
