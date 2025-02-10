@@ -62,7 +62,7 @@ cat("P(cancer|smoker):", round(cancer_given_smoker, 3))
 
 Now the probability calculation $\frac{126}{226} = 0.558$ is not valid because this is a case-control study. In case-control studies, the expected value of the sample proportion does not equal the true population proportion:
 
-$E\left\{\frac{n_{11}}{n_{11}+n_{12}}\right\} \neq \frac{N_{11}}{N_{11}+N_{12}}$
+$E\left[\frac{n_{11}}{n_{11}+n_{12}}\right] \neq \frac{N_{11}}{N_{11}+N_{12}}$
 
 This is because cases (lung cancer patients) were deliberately oversampled by design. The sampling was based on disease status (outcome) rather than exposure status (smoking), which distorts the probability estimates. Therefore, one cannot estimate the true probability of lung cancer among smokers from these data.
 
@@ -82,7 +82,7 @@ cat("P(cancer|non-smoker):", round(cancer_given_nonsmoker, 3))
 
 The probability calculation $\frac{35}{96} = 0.365$ is not valid because again this is a case-control study. In case-control studies, the expected value of the sample proportion does not equal the true population proportion since
 
-$E\left{\frac{n_{21}}{n_{21}+n_{22}}\right} \neq \frac{N_{21}}{N_{21}+N_{22}}$
+$E\left[\frac{n_{21}}{n_{21}+n_{22}}\right] \neq \frac{N_{21}}{N_{21}+N_{22}}$
 
 So in simpler terms, this is because cases (lung cancer patients) were deliberately oversampled by design. The sampling was based on disease status (outcome) rather than exposure status (smoking), which distorts the probability estimates. Therefore, one cannot estimate the true probability of lung cancer among non-smokers from these data. Just like in part c), case-control studies cannot be used to estimate disease probabilities directly.
 
