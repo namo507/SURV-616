@@ -1,15 +1,32 @@
-```{r}
-a = 171
-b = 3264
-c = 117
-d = 4320
+n = 808
+27% 808 = 218
+not hiv infected = 808-218 = 590
+p and hiv = 16
+25% of total is not pregnant
+total not pregnant 142/0.25 = 568
 
-Vlnr = 
-I
-I_ = c/(c+d)
-I_
-RR = I/I_
-RR
-OR = (a*d)/(b*c)
-OR
-```
+total pregnant women = 808-568 = 240
+
+                HIV infected                HIV not infected        total
+pregnant            16                             224                 240
+not pregnant        142                             426                568
+Total               158                              650                   808
+
+
+
+
+n = 826
+13% 826 = 108
+not hiv infected = 718
+p and hiv = 8
+11% of total is not pregnant
+total not pregnant 75/0.11 = 682
+
+total pregnant women = 826-682 = 144
+
+
+
+                HIV infected                HIV not infected        total
+pregnant            8                             674                 682
+not pregnant        75                           69                   144
+Total               83                              743                  826
