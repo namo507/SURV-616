@@ -290,17 +290,17 @@ First, let me define the variables:
 * $n_{21} = 548$ (Not bald with heart disease)
 * $n_{22} = 7,611$ (Not bald without heart disease)
 
-1) Calculatinf Risk Ratio ($\hat{R}$):
+1) Calculating Risk Ratio ($\hat{R}$):
 $\hat{R} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{127 \times 7,611}{1,224 \times 548} = 1.441$
 
-2) Calculate Attributable Risk for Exposed:
+2) Then calculating Attributable Risk for Exposed:
 $\hat{A}_{Exposed} = \frac{\hat{R} - 1}{\hat{R}} = \frac{1.441 - 1}{1.441} = 0.306$ or 30.6%
 
-3) Calculate Population Attributable Risk:
+3) Now to calculate Population Attributable Risk:
 $\hat{A}_{pop} = \frac{n_{11}n_{22} - n_{12}n_{21}}{(n_{11} + n_{21})(n_{21} + n_{22})}$
 $= \frac{127 \times 7,611 - 1,224 \times 548}{(127 + 548)(548 + 7,611)} = 0.0537$ or 5.37%
 
-4) Calculate variance for confidence interval:
+4) Calculating variance for confidence interval:
 $V(ln(1-\hat{A}_{pop})) = \frac{n_{12} + \hat{A}_{pop}(n_{11} + n_{22})}{N}$
 where $N = n_{11} + n_{12} + n_{21} + n_{22}$
 
@@ -311,20 +311,20 @@ $CI = 1 - exp(ln(1-\hat{A}_{pop}) \pm 1.96\sqrt{V(ln(1-\hat{A}_{pop}))})$
 $= (-1.135, 0.581)$
 
 ```{r}
-# Define variables
+# Defining variables
 a <- 127
 b <- 1224
 c <- 548
 d <- 7611
 
-# Calculate risk ratio
+# Calculating risk ratio
 r_hat <- (a*d)/(b*c)
 
-# Calculate attributable risks
+# Calculating attributable risks
 a_exposed <- (r_hat-1)/r_hat
 a_pop <- (a*d-b*c)/((a+c)*(c+d))
 
-# Calculate variance and CI
+# Calculating variance and CI
 v_ln <- (b + a_pop*(a+d))/(a+b+c+d)
 lcl <- 1-exp(log(1-a_pop) + 1.96*sqrt(v_ln))
 ucl <- 1-exp(log(1-a_pop) - 1.96*sqrt(v_ln))
@@ -333,3 +333,9 @@ cat("Risk Ratio:", round(r_hat, 3), "\n")
 cat("Population Attributable Risk:", round(a_pop, 3), "\n")
 cat("95% CI for AR:", round(lcl, 3), "-", round(ucl, 3))
 ```
+Alright. So based on my analysis of this heart disease study data, I found some interesting but uncertain relationships between baldness and heart disease risk. 
+
+The risk ratio of 1.441 suggests that bald individuals have about 44% higher risk of developing heart disease compared to non-bald individuals. 
+When I looked at the population level impact through the Population Attributable Risk (PAR) of 0.054, this tells me that approx 5.4% of heart disease cases in the population might be attributable to baldness. 
+
+However, I need to be quite cautious with these interpretations because the 95% confidence interval (-1.135, 0.581) is very wide and includes negative values, which doesn't make practical sense. This unusually wide confidence interval, spanning from negative to positive values, suggests there's a lot of uncertainty in the estimate and the true effect of baldness on heart disease risk isn't very clear. So, while there might be some association between baldness and heart disease, I can't be very confident about its exact magnitude based on this data alone.
