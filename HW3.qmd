@@ -243,7 +243,11 @@ cat('Population Attributable Risk:', round(a_pop, 3), '\n')
 cat('95% CI:', round(lcl, 3), '-', round(ucl, 3))
 ```
 
-Ok so based on the calculation, the Population Attributable Risk (PAR) of 0.5 means that about 50% of bladder cancer cases in the population can be attributed to smoking. Now, the 95% confidence interval of 0.423 to 0.567 indicates that one is 95% confident the true proportion of bladder cancer cases due to smoking lies between 42.3% and 56.7%. This tells me that smoking has a significant impact on the incidence of bladder cancer in this population. To put it simply, if one could eliminate smoking, then it could potentially reduce bladder cancer cases by approximately half.
+Ok so based on the calculation, the Population Attributable Risk (PAR) of 0.5 means that about 50% of bladder cancer cases in the population can be attributed to smoking. 
+
+Now, the 95% confidence interval of 0.423 to 0.567 indicates that one is 95% confident the true proportion of bladder cancer cases due to smoking lies between 42.3% and 56.7%. This tells me that smoking has a significant impact on the incidence of bladder cancer in this population. 
+
+To put it simply, if one could eliminate smoking, then it could potentially reduce bladder cancer cases by approximately half.
 
 
 ## 3.The following data come from a fictional prospective study of the association between baldness and heart disease. The sample was randomly selected from the population and then followed to see if they developed baldness and/or heart disease.
