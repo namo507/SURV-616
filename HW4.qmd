@@ -1,0 +1,5 @@
+---
+title: "Homework 4: Namit Shrivastava"
+format: pdf
+editor: visual
+---
