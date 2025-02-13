@@ -13,6 +13,7 @@ The bank has various outreach plans to sell term deposits to their customers suc
 Hence, it is crucial to identify the customers most likely to convert beforehand so that they can be specifically targeted via call. You are provided with the client data such as: age of the client, their job type, their marital status, etc. Along with the client data, you are also provided with the information of the call such as the duration of the call, day and month of the call, etc. Given this information, your task is to predict if the client will subscribe to term deposit.
 
 ## Data Dictionary
+$$
 
 ```{=tex}
 \begin{center}
@@ -58,4 +59,56 @@ subscribed & Has the client subscribed a term deposit? (target variable) \\
 \hline
 \end{tabular}
 \end{center}
+$$
 
+## 1a. [10 points] Create an empirical logit plot with the response variable (y) subscribed by the predictor variable (x) age. You may want to convert subscribed to a numeric variable first.
+
+The empirical logit is calculated using the formula:
+
+$$
+\text{empirical logit} = \ln\left(\frac{p + \frac{1}{2n}}{1 - p + \frac{1}{2n}}\right)
+$$
+
+where:
+- $p$ is the proportion of successes in each group
+- $n$ is the number of observations in each group
+```{r}
+# Loading the required libraries
+library(dplyr)
+library(ggplot2)
+
+# Reading the data
+deposit_data <- read.csv("deposit-1.csv")
+
+# Converting subscribed to numeric
+deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
+
+# Calculating empirical logits by age
+empirical_logits <- deposit_data %>%
+  group_by(age) %>%
+  summarize(
+    n = n(),
+    successes = sum(subscribed_num),
+    p = successes/n,
+    emp_logit = log((p + 1/(2*n))/(1 - p + 1/(2*n)))
+  )
+
+# Creating the empirical logit plot
+ggplot(empirical_logits, aes(x = age, y = emp_logit)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(
+    title = "Empirical Logit Plot",
+    x = "Age",
+    y = "Empirical Logit",
+    caption = "Note: Blue line shows LOESS smooth with 95% confidence interval"
+  ) +
+  theme_minimal()
+
+# Displaying first few rows of calculations
+knitr::kable(
+  head(empirical_logits),
+  caption = "Sample of Empirical Logit Calculations",
+  digits = 4
+)
+```
