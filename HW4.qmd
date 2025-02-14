@@ -348,6 +348,6 @@ Now interpretting the results obtained,
 So by concluding, the analysis strongly suggests that increasing the number of campaign contacts is not effective at producing subscriptions. In fact, each additional contact is associated with significantly lower odds of subscription, supporting our earlier findings about the diminishing returns of repeated contacts.
 
 
-
+## 1e [5 points] What is the probability of a person with zero contacts (i.e. campaign=0) subscribing to a term deposit? What is the probability of a person with one contacts (i.e. campaign=1) subscribing to a term deposit? What is the probability of a person with two contacts (i.e. campaign=2) subscribing to a term deposit?
 
 
