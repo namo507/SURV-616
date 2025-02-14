@@ -237,4 +237,117 @@ This data tells me one should probably rethink the follow-up strategy. Instead o
 
 1. Investing more in making that first contact as effective as possible
 2. Moving on to fresh prospects after 2-3 unsuccessful attempts
-3. Analyzing what makes our first contacts more successful and applying those lessons
+3. Analyzing what makes the first contacts more successful and applying those lessons
+
+## 1d. [15 points] Next, we want to evaluate if campaign contacts are effective. Estimate a logistic regression model using the variable campaign as a predictor of subscribed=yes. Are more campaign contacts effective at producing subscriptions to term deposits?
+
+So to evaluate if campaign contacts are effective at producing subscriptions, let me fit a logistic regression model:
+
+$$
+\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \times \text{campaign}
+$$
+
+where $p$ is the probability of subscribing to a term deposit.
+
+## 1d. Logistic Regression Analysis of Campaign Effectiveness
+
+To evaluate if campaign contacts are effective at producing subscriptions, let's fit a logistic regression model:
+
+$$
+\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \times \text{campaign}
+$$
+
+where $p$ is the probability of subscribing to a term deposit.
+
+```{r}
+# Fitting logistic regression model
+logistic_model <- glm(subscribed_num ~ campaign, 
+                      data = deposit_data,
+                      family = binomial)
+
+# Creating summary table with odds ratios
+summary_stats <- summary(logistic_model)
+odds_ratios <- exp(coef(logistic_model))
+conf_intervals <- exp(confint(logistic_model))
+
+# Combining results into a table
+model_results <- data.frame(
+  Coefficient = coef(logistic_model),
+  Std_Error = summary_stats$coefficients[,2],
+  z_value = summary_stats$coefficients[,3],
+  p_value = summary_stats$coefficients[,4],
+  Odds_Ratio = odds_ratios,
+  CI_Lower = conf_intervals[,1],
+  CI_Upper = conf_intervals[,2]
+)
+
+# Displaying results in LaTeX format
+knitr::kable(
+  model_results,
+  caption = "Logistic Regression Results",
+  digits = 4,
+  align = 'c',
+  col.names = c("β", "SE", "z-value", "p-value", "OR", "95% CI Lower", "95% CI Upper")
+)
+
+# Calculating model fit statistics
+model_fit <- data.frame(
+  Metric = c("Null Deviance", "Residual Deviance", "AIC", "McFadden R²"),
+  Value = c(
+    logistic_model$null.deviance,
+    logistic_model$deviance,
+    logistic_model$aic,
+    1 - (logistic_model$deviance/logistic_model$null.deviance)
+  )
+)
+
+# Displaying model fit statistics
+knitr::kable(
+  model_fit,
+  caption = "Model Fit Statistics",
+  digits = 4
+)
+
+# Visualizing predicted probabilities
+campaign_range <- data.frame(campaign = 1:10)
+predicted_probs <- predict(logistic_model, 
+                          newdata = campaign_range, 
+                          type = "response")
+
+pred_df <- data.frame(
+  campaign = campaign_range$campaign,
+  prob = predicted_probs
+)
+
+ggplot(pred_df, aes(x = campaign, y = prob)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Predicted Probability of Subscription by Number of Campaigns",
+    x = "Number of Campaign Contacts",
+    y = "Predicted Probability of Subscription"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::percent)
+```
+
+Now interpretting the results obtained, 
+
+1. **Model Coefficients**:
+   - The coefficient for campaign (B1) is `r round(coef(logistic_model)[2], 4)`, indicating a negative relationship
+   - This translates to an odds ratio of `r round(odds_ratios[2], 4)`, meaning the odds of subscription decrease by `r round((1-odds_ratios[2])*100, 1)`% for each additional contact
+
+2. **Statistical Significance**:
+   - The p-value for campaign (`r format.pval(summary_stats$coefficients[2,4], digits=4)`) indicates the relationship is statistically significant
+   - The 95% confidence interval for the odds ratio doesn't include 1, confirming the significance
+
+3. **Model Fit**:
+   - McFadden's $R^2$ of `r round(1 - (logistic_model$deviance/logistic_model$null.deviance), 4)` suggests moderate predictive power
+   - The negative coefficient and visualization demonstrate that more campaign contacts are associated with lower subscription probability
+
+So by concluding, the analysis strongly suggests that increasing the number of campaign contacts is not effective at producing subscriptions. In fact, each additional contact is associated with significantly lower odds of subscription, supporting our earlier findings about the diminishing returns of repeated contacts.
+
+
+
+
+
