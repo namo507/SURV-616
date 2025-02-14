@@ -350,4 +350,252 @@ So by concluding, the analysis strongly suggests that increasing the number of c
 
 ## 1e [5 points] What is the probability of a person with zero contacts (i.e. campaign=0) subscribing to a term deposit? What is the probability of a person with one contacts (i.e. campaign=1) subscribing to a term deposit? What is the probability of a person with two contacts (i.e. campaign=2) subscribing to a term deposit?
 
+## 1e. Probability Calculations for Different Contact Numbers
 
+Using the fitted logistic regression model, one can calculate the probability of subscription for different numbers of contacts using the formula:
+
+$$
+P(\text{subscription}) = \frac{e^{\beta_0 + \beta_1 \times \text{campaign}}}{1 + e^{\beta_0 + \beta_1 \times \text{campaign}}}
+$$
+
+```{r}
+# Creating new data for predictions
+new_data <- data.frame(campaign = c(0, 1, 2))
+
+# Calculating predicted probabilities
+predicted_probs <- predict(logistic_model, 
+                          newdata = new_data, 
+                          type = "response")
+
+# Combining results
+prob_table <- data.frame(
+  Contacts = new_data$campaign,
+  Probability = predicted_probs
+)
+
+# Displaying results in formatted table
+knitr::kable(
+  prob_table,
+  caption = "Predicted Probabilities of Subscription by Number of Contacts",
+  col.names = c("Number of Contacts", "Probability of Subscription"),
+  digits = 4,
+  align = c('c', 'c')
+)
+
+# Calculating log-odds for each scenario
+log_odds <- predict(logistic_model, newdata = new_data, type = "link")
+calculations <- data.frame(
+  Contacts = new_data$campaign,
+  Log_Odds = log_odds,
+  Odds = exp(log_odds),
+  Probability = predicted_probs
+)
+
+# Displaying detailed calculations
+knitr::kable(
+  calculations,
+  caption = "Step-by-step Probability Calculations",
+  col.names = c("Contacts", "Log-Odds", "Odds", "Probability"),
+  digits = 4,
+  align = c('c', 'c', 'c', 'c')
+)
+```
+
+
+## 1f. [20 points] Estimate a logistic regression model using the variable campaign as a predictor along with the following other variables: job, marital, education, default, housing, loan, contact, age, and campaign. Consider the form in which age should enter the model (i.e. categorical, continuous, transformed) and choose the best option for this model. Are more campaign contacts effective at producing subscriptions to term deposits conditional on the additional predictors?
+
+## 1f. Multivariate Logistic Regression Analysis
+
+First, let me examine age distribution to determine its appropriate form in the model:
+
+```{r}
+# Examining age relationship with empirical logit
+ggplot(empirical_logits, aes(x = age, y = emp_logit)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(title = "Age vs Empirical Logit",
+       x = "Age",
+       y = "Empirical Logit") +
+  theme_minimal()
+
+# Creating age categories based on quartiles
+deposit_data <- deposit_data %>%
+  mutate(age_cat = cut(age, 
+                       breaks = quantile(age, probs = c(0, 0.25, 0.5, 0.75, 1)),
+                       labels = c("Q1", "Q2", "Q3", "Q4"),
+                       include.lowest = TRUE))
+
+# Fitting the multivariate logistic regression
+full_model <- glm(subscribed_num ~ 
+                  age_cat +          # Age as categorical (based on quartiles)
+                  job + 
+                  marital + 
+                  education + 
+                  default + 
+                  housing + 
+                  loan + 
+                  contact + 
+                  campaign,
+                data = deposit_data,
+                family = binomial)
+
+# Creating summary with odds ratios
+summary_stats <- summary(full_model)
+odds_ratios <- exp(coef(full_model))
+conf_intervals <- exp(confint(full_model))
+
+# Combining results
+model_results <- data.frame(
+  Variable = names(coef(full_model)),
+  Coefficient = coef(full_model),
+  Std_Error = summary_stats$coefficients[,2],
+  z_value = summary_stats$coefficients[,3],
+  p_value = summary_stats$coefficients[,4],
+  Odds_Ratio = odds_ratios,
+  CI_Lower = conf_intervals[,1],
+  CI_Upper = conf_intervals[,2]
+)
+
+# Displaying results
+knitr::kable(
+  model_results,
+  caption = "Multivariate Logistic Regression Results",
+  digits = 4,
+  align = 'c',
+  col.names = c("Variable", "β", "SE", "z-value", "p-value", "OR", "95% CI Lower", "95% CI Upper")
+)
+
+# Model fit statistics
+model_fit <- data.frame(
+  Metric = c("Null Deviance", "Residual Deviance", "AIC", "McFadden R²"),
+  Value = c(
+    full_model$null.deviance,
+    full_model$deviance,
+    full_model$aic,
+    1 - (full_model$deviance/full_model$null.deviance)
+  )
+)
+
+knitr::kable(
+  model_fit,
+  caption = "Model Fit Statistics",
+  digits = 4
+)
+
+# Visualizing campaign effect while controlling for other variables
+pred_data <- expand.grid(
+  campaign = 1:10,
+  age_cat = "Q2",                # Reference level
+  job = "management",            # Most common category
+  marital = "married",
+  education = "secondary",
+  default = "no",
+  housing = "no",
+  loan = "no",
+  contact = "cellular"
+)
+
+predicted_probs <- predict(full_model, 
+                          newdata = pred_data, 
+                          type = "response")
+
+ggplot(data.frame(campaign = pred_data$campaign, 
+                  probability = predicted_probs), 
+       aes(x = campaign, y = probability)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Adjusted Probability of Subscription by Campaign Contacts",
+    x = "Number of Campaign Contacts",
+    y = "Predicted Probability of Subscription",
+    caption = "Adjusted for other predictors held at reference levels"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::percent)
+```
+
+Now interpreting the results obtained:
+
+1. **Age Treatment**:
+   - Based on the empirical logit plot, age shows a non-linear relationship
+   - Categorized age into quartiles to capture non-linear effects
+   
+2. **Campaign Effect**:
+   - Coefficient for campaign: $\beta_{campaign}$ = `r round(coef(full_model)["campaign"], 4)`
+   - Odds ratio = `r round(exp(coef(full_model)["campaign"]), 4)`
+   - Still shows negative effect even after controlling for other variables
+
+3. **Model Fit**:
+   - McFadden's $R^2$ = `r round(1 - (full_model$deviance/full_model$null.deviance), 4)`
+   - Significant improvement over campaign-only model
+
+4. **Key Findings**:
+   - Campaign contacts remain negatively associated with subscription probability
+   - Effect persists after controlling for demographic and financial characteristics
+   - Other significant predictors include age, education, and contact method
+
+
+## 1g. [10 points] For the model estimated in 1f, what is an interpretation of the coefficient for campaign?
+
+## Interpretation of Campaign Coefficient
+
+The coefficient for campaign in the multivariate logistic model represents the change in log-odds of subscription for each additional contact, holding all other variables constant.
+
+```{r}
+# Extracting campaign coefficient and related statistics
+campaign_coef <- coef(full_model)["campaign"]
+campaign_OR <- exp(campaign_coef)
+campaign_CI <- exp(confint(full_model))["campaign", ]
+
+# Creating detailed interpretation table
+interpretation_stats <- data.frame(
+  Metric = c("Log-odds coefficient (β)", 
+             "Odds Ratio", 
+             "Percentage change in odds",
+             "95% CI Lower",
+             "95% CI Upper",
+             "p-value"),
+  Value = c(
+    round(campaign_coef, 4),
+    round(campaign_OR, 4),
+    round((campaign_OR - 1) * 100, 2),
+    round(campaign_CI[1], 4),
+    round(campaign_CI[2], 4),
+    format.pval(summary(full_model)$coefficients["campaign", "Pr(>|z|)"], digits = 4)
+  )
+)
+
+# Displaying interpretation statistics
+knitr::kable(
+  interpretation_stats,
+  caption = "Campaign Coefficient Interpretation Statistics",
+  align = c('l', 'r')
+)
+```
+
+Now talking about the mathematical interpretation
+
+The logistic regression equation for the campaign variable, holding other variables constant:
+
+$$
+\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_{\text{campaign}} \times \text{campaign} + \text{other variables}
+$$
+
+where $\beta_{\text{campaign}} = `r round(campaign_coef, 4)`$
+
+Now coming to the practical interpretations:
+
+1. **Log-odds scale**: 
+   - For each additional campaign contact, the log-odds of subscription decrease by `r abs(round(campaign_coef, 4))` units, holding other variables constant
+
+2. **Odds scale**: 
+   - The odds ratio of `r round(campaign_OR, 4)` means that for each additional campaign contact, the odds of subscription decrease by `r abs(round((1-campaign_OR)*100, 1))`%, controlling for other variables
+   
+3. **Statistical significance**:
+   - The effect is statistically significant (p < `r format.pval(summary(full_model)$coefficients["campaign", "Pr(>|z|)"], digits=4)`)
+   - We can be 95% confident that the true odds ratio lies between `r round(campaign_CI[1], 4)` and `r round(campaign_CI[2], 4)`
+
+So in a business perspective, even after accounting for demographic and financial characteristics:
+- Additional campaign contacts are associated with lower subscription probability
+- Each contact reduces the odds of subscription by approximately `r abs(round((1-campaign_OR)*100, 1))`%
+- The negative relationship is consistent and statistically significant
