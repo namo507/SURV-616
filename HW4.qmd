@@ -265,7 +265,7 @@ logistic_model <- glm(subscribed_num ~ campaign,
                       data = deposit_data,
                       family = binomial)
 
-# Creating summary table with odds ratios
+# Creating summary statistics
 summary_stats <- summary(logistic_model)
 odds_ratios <- exp(coef(logistic_model))
 conf_intervals <- exp(confint(logistic_model))
@@ -281,16 +281,7 @@ model_results <- data.frame(
   CI_Upper = conf_intervals[,2]
 )
 
-# Displaying results in LaTeX format
-knitr::kable(
-  model_results,
-  caption = "Logistic Regression Results",
-  digits = 4,
-  align = 'c',
-  col.names = c("β", "SE", "z-value", "p-value", "OR", "95% CI Lower", "95% CI Upper")
-)
-
-# Calculating model fit statistics
+# Model fit statistics
 model_fit <- data.frame(
   Metric = c("Null Deviance", "Residual Deviance", "AIC", "McFadden R²"),
   Value = c(
@@ -299,13 +290,6 @@ model_fit <- data.frame(
     logistic_model$aic,
     1 - (logistic_model$deviance/logistic_model$null.deviance)
   )
-)
-
-# Displaying model fit statistics
-knitr::kable(
-  model_fit,
-  caption = "Model Fit Statistics",
-  digits = 4
 )
 
 # Visualizing predicted probabilities
@@ -319,6 +303,7 @@ pred_df <- data.frame(
   prob = predicted_probs
 )
 
+# Creating visualization
 ggplot(pred_df, aes(x = campaign, y = prob)) +
   geom_line() +
   geom_point() +
@@ -329,6 +314,10 @@ ggplot(pred_df, aes(x = campaign, y = prob)) +
   ) +
   theme_minimal() +
   scale_y_continuous(labels = scales::percent)
+
+# Display results
+print(model_results)
+print(model_fit)
 ```
 
 Now interpretting the results obtained, 
