@@ -249,8 +249,6 @@ $$
 
 where $p$ is the probability of subscribing to a term deposit.
 
-## 1d. Logistic Regression Analysis of Campaign Effectiveness
-
 To evaluate if campaign contacts are effective at producing subscriptions, let's fit a logistic regression model:
 
 $$
