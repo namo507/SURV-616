@@ -68,7 +68,7 @@ $$
 p = \frac{\text{Number of Successes}}{\text{Total Observations}}
 $$
 
-Then we add a continuity correction term of \( \frac{1}{2n} \) in the numerator and denominator:
+Then we add a continuity correction term in the numerator and denominator:
 
 $$
 p^* = p + \frac{1}{2n}, \quad 1 - p^* = 1 - p + \frac{1}{2n}
@@ -423,7 +423,7 @@ $$
 LR = -2(\ln L_{\text{simple}} - \ln L_{\text{full}}) \sim \chi^2_{df}
 $$
 
-where $df$ is the difference in degrees of freedom between the models.
+where $$df$$ is the difference in degrees of freedom between the models.
 
 ```{r}
 # Fit the reduced model from part 1d (using only campaign as a predictor)
