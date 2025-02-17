@@ -34,34 +34,54 @@ cell_probabilities
 ```
 
 ```{r}
-# 2. Calculate Relative Risk
-# For "Lower than 60" vs "Equal or higher than 75"
-lower_than_60 <- data[data$Temp < 60, ]
-equal_or_higher_75 <- data[data$Temp >= 75, ]
+# Create categorical variable for temperature ranges
+data$TempCat <- cut(data$Temp, breaks=c(-Inf, 55, 60, 65, 70, 75, Inf), labels=c("<=55", "56-60", "61-65", "66-70", "71-75", ">=75"))
 
-risk_lower_60 <- sum(lower_than_60$Failure) / nrow(lower_than_60)
-risk_higher_75 <- sum(equal_or_higher_75$Failure) / nrow(equal_or_higher_75)
+# Calculate cell probabilities
+cell_counts <- table(data$Temp, data$damage, data$TempCat)
+total_observations <- sum(cell_counts)
+cell_probabilities <- cell_counts / total_observations
+
+# Convert the table to a data frame for easier viewing
+simplified_table <- as.data.frame(cell_probabilities)
+
+# Print the simplified table
+print(simplified_table)
+```
+
+```{r}
+orings2 <- read.table("/Users/namomac/Downloads/spacshu.dat", header = FALSE)
+colnames(orings2) <- c("temp", "damage")
+
+# Categorize temperatures
+orings2$temp.grp <- NA
+orings2$temp.grp[orings2$temp < 60] <- 55
+orings2$temp.grp[orings2$temp >= 60 & orings2$temp < 65] <- 60
+orings2$temp.grp[orings2$temp >= 65 & orings2$temp < 70] <- 65
+orings2$temp.grp[orings2$temp >= 70 & orings2$temp < 75] <- 70
+orings2$temp.grp[orings2$temp >= 75] <- 75
+
+# Compute Relative Risk (RR)
+lower_than_60 <- orings2[orings2$temp.grp == 55, ]
+equal_or_higher_75 <- orings2[orings2$temp.grp == 75, ]
+
+risk_lower_60 <- sum(lower_than_60$damage) / nrow(lower_than_60)
+risk_higher_75 <- sum(equal_or_higher_75$damage) / nrow(equal_or_higher_75)
 
 relative_risk <- risk_lower_60 / risk_higher_75
 
-relative_risk
-```
+# Compute Odds Ratios (OR)
+odds_lower_60 <- sum(lower_than_60$damage) / sum(lower_than_60$damage == 0)
+odds_higher_75 <- sum(equal_or_higher_75$damage) / sum(equal_or_higher_75$damage == 0)
 
-```{r}
-# 3 & 4. Calculate Odds Ratios
-odds_lower_60 <- sum(lower_than_60$Failure) / sum(lower_than_60$Failure == 0)
-
-odds_lower_60
-
-odds_higher_75 <- sum(equal_or_higher_75$Failure) / sum(equal_or_higher_75$Failure == 0)
-
-odds_higher_75
-```
-```{r}
 # Difference between Odds Ratios
 difference_odds_ratios <- odds_higher_75 - odds_lower_60
 
-difference_odds_ratios
+# Print the results
+cat("Relative Risk (Lower than 60 compared to Equal or higher than 75):", relative_risk, "\n")
+cat("Odds Ratio of o-ring failure at Lower than 60 degrees:", odds_lower_60, "\n")
+cat("Odds Ratio of o-ring failure at Equal or higher than 75 degrees:", odds_higher_75, "\n")
+cat("Difference between Odds Ratios:", difference_odds_ratios, "\n")
 ```
 ```{r}
 # 6. Fit logistic regression model
