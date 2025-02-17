@@ -63,54 +63,55 @@ $$
 
 ## 1a. [10 points] Create an empirical logit plot with the response variable (y) subscribed by the predictor variable (x) age. You may want to convert subscribed to a numeric variable first.
 
-The empirical logit is calculated using the formula:
+Let the proportion of successes be:
+$$
+p = \frac{\text{Number of Successes}}{\text{Total Observations}}
+$$
+
+Then we add a continuity correction term of \( \frac{1}{2n} \) in the numerator and denominator:
 
 $$
-\text{empirical logit} = \ln\left(\frac{p + \frac{1}{2n}}{1 - p + \frac{1}{2n}}\right)
+p^* = p + \frac{1}{2n}, \quad 1 - p^* = 1 - p + \frac{1}{2n}
 $$
 
-where:
-- $p$ is the proportion of successes in each group
-- $n$ is the number of observations in each group
+Thus the empirical logit is defined as:
+$$
+\text{empirical logit} 
+= \ln \left( \frac{p^*}{1 - p^*} \right)
+= \ln \left( \frac{p + \frac{1}{2n}}{1 - p + \frac{1}{2n}} \right)
+$$
+
 ```{r}
-# Loading the required libraries
+# Load libraries
 library(dplyr)
 library(ggplot2)
 
-# Reading the data
+# Read data
 deposit_data <- read.csv("deposit-1.csv")
 
-# Converting subscribed to numeric
+# Convert subscribed to numeric
 deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
 
-# Calculating empirical logits by age
+# Calculate empirical logits by age
 empirical_logits <- deposit_data %>%
   group_by(age) %>%
   summarize(
     n = n(),
     successes = sum(subscribed_num),
-    p = successes/n,
-    emp_logit = log((p + 1/(2*n))/(1 - p + 1/(2*n)))
+    p = successes / n,
+    emp_logit = log((p + 1/(2*n)) / (1 - p + 1/(2*n)))
   )
 
-# Creating the empirical logit plot
+# Create the empirical logit plot
 ggplot(empirical_logits, aes(x = age, y = emp_logit)) +
   geom_point() +
   geom_smooth(method = "loess", se = TRUE) +
   labs(
     title = "Empirical Logit Plot",
     x = "Age",
-    y = "Empirical Logit",
-    caption = "Note: Blue line shows LOESS smooth with 95% confidence interval"
+    y = "Empirical Logit"
   ) +
   theme_minimal()
-
-# Displaying first few rows of calculations
-knitr::kable(
-  head(empirical_logits),
-  caption = "Sample of Empirical Logit Calculations",
-  digits = 4
-)
 ```
 
 ## 1b. [10 points] Report the proportion (tabular format is fine) subscribed=”yes” for each of the categories for job, marital, education, default, housing, loan, and contact.
