@@ -417,8 +417,6 @@ From this logistic regression model, the negative coefficient (−0.1225) for ca
 
 ## 1h. [10 points] Use the likelihood ratio test discussed in class to evaluate whether the model in 1f is a better fit than the model in 1d.
 
-## 1h. Likelihood Ratio Test
-
 Now I will compare the simpler model (1d) with campaign only to the full model (1f) with multiple predictors using the likelihood ratio test:
 
 $$
@@ -428,61 +426,22 @@ $$
 where $df$ is the difference in degrees of freedom between the models.
 
 ```{r}
-# Performing likelihood ratio test
-lr_test <- anova(logistic_model, full_model, test = "LRT")
+# Fit the reduced model from part 1d (using only campaign as a predictor)
+model_d <- glm(subscribed_numeric ~ campaign, data = deposit, family = binomial)
 
-# Creating detailed results table
-lr_results <- data.frame(
-  Model = c("Simple (1d)", "Full (1f)"),
-  DF = c(lr_test$Df[1], lr_test$Df[2]),
-  Deviance = c(lr_test$Deviance[1], lr_test$Deviance[2]),
-  AIC = c(AIC(logistic_model), AIC(full_model)),
-  BIC = c(BIC(logistic_model), BIC(full_model))
-)
+# Fit the full model from part 1f (using campaign and the additional predictors)
+model_f <- glm(subscribed_numeric ~ campaign + job + marital + education + default + housing + loan + contact + age, 
+               data = deposit, 
+               family = binomial)
 
-# Displaying model comparison statistics
-knitr::kable(
-  lr_results,
-  caption = "Model Comparison Statistics",
-  digits = 2,
-  align = c('l', 'r', 'r', 'r', 'r')
-)
-
-# Creating likelihood ratio test results table
-lr_stats <- data.frame(
-  Metric = c("Likelihood Ratio Statistic", 
-             "Degrees of Freedom", 
-             "p-value",
-             "Change in Deviance"),
-  Value = c(
-    lr_test$`LR stat`[2],
-    lr_test$`Df`[2] - lr_test$`Df`[1],
-    lr_test$`Pr(>Chi)`[2],
-    lr_test$Deviance[1] - lr_test$Deviance[2]
-  )
-)
-
-# Displaying likelihood ratio test results
-knitr::kable(
-  lr_stats,
-  caption = "Likelihood Ratio Test Results",
-  digits = 4,
-  align = c('l', 'r')
-)
+# Use the likelihood ratio test to compare the two models
+lrt <- anova(model_d, model_f, test = "LRT")
+print(lrt)
 ```
 
-Interpretting the results:
+Based on the likelihood ratio test results, I can see that the full model (with all predictors) is significantly better than the simpler model that only uses campaign as a predictor. 
 
-1. **Test Statistic**:
-   - LR = `r round(lr_test$"LR stat"[2], 2)`
-   - Degrees of freedom = `r lr_test$"Df"[2] - lr_test$"Df"[1]`
-   - p-value < `r format.pval(lr_test$"Pr(>Chi)"[2], digits=4)`
+The test produced a very large deviance difference of 1,786.7 with 22 degrees of freedom, and the extremely small p-value (< 2.2e-16) strongly suggests that the additional variables provide important information for predicting term deposit subscriptions. 
 
-2. **Model Comparison**:
-   - Reduction in deviance: `r round(lr_test$Deviance[1] - lr_test$Deviance[2], 2)`
-   - The full model has lower AIC (`r round(AIC(full_model), 2)` vs `r round(AIC(logistic_model), 2)`)
-   - The full model has lower BIC (`r round(BIC(full_model), 2)` vs `r round(BIC(logistic_model), 2)`)
-
-3. **Conclusion**: 
-   The likelihood ratio test shows strong evidence (p < `r format.pval(lr_test$"Pr(>Chi)"[2], digits=4)`) that the full model provides a significantly better fit than the simple model. The substantial reduction in deviance and lower information criteria (AIC, BIC) further support using the more complex model for predicting term deposit subscriptions.
+In practical terms, this means that while the number of campaign contacts is important, considering other factors like job type, marital status, education, and financial status (default, housing, loan) significantly improves our ability to predict who will subscribe to a term deposit. This aligns with our intuition that customer characteristics and circumstances play a crucial role in their financial decisions.
 
