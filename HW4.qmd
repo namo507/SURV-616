@@ -124,6 +124,7 @@ $$
 
 
 ```{r}
+library(knitr)
 # Function to calculate proportions for a categorical variable
 calculate_proportions <- function(data, var_name) {
   props <- data %>%
@@ -131,15 +132,11 @@ calculate_proportions <- function(data, var_name) {
     summarize(
       total = n(),
       subscribed_yes = sum(subscribed == "yes"),
-      proportion = round(subscribed_yes/total, 4)
+      proportion = round(subscribed_yes / total, 4)
     ) %>%
-    arrange(desc(proportion))
-  
-  # Add variable name to the results
-  props <- props %>%
-    mutate(variable = var_name) %>%
-    select(variable, everything())
-  
+    arrange(desc(proportion)) %>%
+    mutate(variable = var_name)
+
   return(props)
 }
 
@@ -151,15 +148,17 @@ proportion_tables <- lapply(cat_vars, function(var) {
   calculate_proportions(deposit_data, var)
 })
 
-# Displaying tables with proper formatting
+# Printing tables with knitr for each variable
 for(i in seq_along(cat_vars)) {
   cat("\n### Proportions for", cat_vars[i], "\n")
-  print(knitr::kable(
-    proportion_tables[[i]], 
-    col.names = c("Variable", "Category", "Total", "Subscribed Yes", "Proportion"),
-    caption = paste("Subscription proportions by", cat_vars[i]),
-    digits = 4
-  ))
+  print(
+    kable(
+      proportion_tables[[i]],
+      col.names = c("Category", "Total", "Subscribed Yes", "Proportion", "Variable"),
+      caption = paste("Subscription proportions by", cat_vars[i]),
+      digits = 4
+    )
+  )
   cat("\n")
 }
 ```
@@ -174,13 +173,15 @@ Now, the tables above show the proportion of customers who subscribed to a term 
 
 Based on my analysis of the subscription proportions across different categories, the table observations are:
 
-1. Students and retirees are most likely to subscribe to term deposits, with subscription rates of 28.7% and 23% respectively. This might be because they're more focused on saving and investment. In contrast, blue-collar workers and entrepreneurs show the lowest subscription rates (around 7-8%).
+1. For job types, students and retirees have the highest subscription rates at 28.7% and 23% respectively, which makes sense as they might be more focused on saving and investment. On the other hand, blue-collar workers and entrepreneurs have the lowest subscription rates, around 7-8%.
 
-2. Looking at marital status, single individuals are more likely to subscribe (15.1%) compared to married (10%) or divorced (12.3%) individuals. Education level also plays a significant role - those with tertiary education show the highest subscription rate (15.2%), while those with primary education have the lowest (8.9%).
+2. When looking at marital status, single individuals are more likely to subscribe (15.1%) compared to married (10%) or divorced (12.3%) individuals. This could be because single people might have fewer financial commitments and more disposable income.
 
-3. Financial circumstances appear crucial: customers without existing financial commitments are more likely to subscribe. Those without housing loans (16.8%) or personal loans (12.8%) show higher subscription rates than those with such commitments. Similarly, customers with no credit defaults have a much higher subscription rate (11.8%) compared to those with defaults (7%).
+3. Education level also plays a significant role. Those with tertiary education show the highest subscription rate (15.2%), while those with primary education have the lowest (8.9%). This suggests that higher education levels might be associated with better financial literacy and a greater propensity to invest.
 
-4. Regarding contact methods, cellular phone contact proves most effective with a 15% success rate, compared to telephone (13%) and unknown contact methods (4.1%). This suggests that mobile phone communication might be the most effective channel for future campaigns.
+4. Financial circumstances are crucial too. Customers without existing financial commitments are more likely to subscribe. Those without housing loans (16.8%) or personal loans (12.8%) show higher subscription rates than those with such commitments. Similarly, customers with no credit defaults have a much higher subscription rate (11.8%) compared to those with defaults (7%).
+
+5. Regarding contact methods, cellular phone contact proves most effective with a 15% success rate, compared to telephone (13%) and unknown contact methods (4.1%). This suggests that mobile phone communication might be the most effective channel for future campaigns.
 
 
 ## 1c. [10 points] Plot the response variable, proportion subscribed=”yes”, for each of the following values of campaign: 1, 2, 3, 4, 5, 6+.
