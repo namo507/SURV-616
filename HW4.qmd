@@ -82,17 +82,17 @@ $$
 $$
 
 ```{r}
-# Load libraries
+# Loading libraries
 library(dplyr)
 library(ggplot2)
 
-# Read data
+# Reading data
 deposit_data <- read.csv("deposit-1.csv")
 
-# Convert subscribed to numeric
+# Converting subscribed to numeric
 deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
 
-# Calculate empirical logits by age
+# Calculating empirical logits by age
 empirical_logits <- deposit_data %>%
   group_by(age) %>%
   summarize(
@@ -102,7 +102,7 @@ empirical_logits <- deposit_data %>%
     emp_logit = log((p + 1/(2*n)) / (1 - p + 1/(2*n)))
   )
 
-# Create the empirical logit plot
+# Creating the empirical logit plot
 ggplot(empirical_logits, aes(x = age, y = emp_logit)) +
   geom_point() +
   geom_smooth(method = "loess", se = TRUE) +
@@ -253,86 +253,44 @@ $$
 where $p$ is the probability of subscribing to a term deposit.
 
 ```{r}
-# Fitting logistic regression model
-logistic_model <- glm(subscribed_num ~ campaign, 
+# Convert 'subscribed' to numeric if not already done
+deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
+
+# Fit a logistic regression model with 'campaign' as the only predictor
+logistic_model <- glm(subscribed_num ~ campaign,
                       data = deposit_data,
                       family = binomial)
 
-# Creating summary statistics
-summary_stats <- summary(logistic_model)
-odds_ratios <- exp(coef(logistic_model))
-conf_intervals <- exp(confint(logistic_model))
+# Summarize the model
+model_summary <- summary(logistic_model)
+print(model_summary)
 
-# Combining results into a table
+# Calculate odds ratios and confidence intervals
+odds_ratios <- exp(coef(logistic_model))
+conf_int <- exp(confint(logistic_model))
+
+# Combine results in a data frame
 model_results <- data.frame(
   Coefficient = coef(logistic_model),
-  Std_Error = summary_stats$coefficients[,2],
-  z_value = summary_stats$coefficients[,3],
-  p_value = summary_stats$coefficients[,4],
+  Std_Error = model_summary$coefficients[, "Std. Error"],
+  z_value = model_summary$coefficients[, "z value"],
+  p_value = model_summary$coefficients[, "Pr(>|z|)"],
   Odds_Ratio = odds_ratios,
-  CI_Lower = conf_intervals[,1],
-  CI_Upper = conf_intervals[,2]
+  CI_Lower = conf_int[, 1],
+  CI_Upper = conf_int[, 2]
 )
-
-# Model fit statistics
-model_fit <- data.frame(
-  Metric = c("Null Deviance", "Residual Deviance", "AIC", "McFadden R²"),
-  Value = c(
-    logistic_model$null.deviance,
-    logistic_model$deviance,
-    logistic_model$aic,
-    1 - (logistic_model$deviance/logistic_model$null.deviance)
-  )
-)
-
-# Visualizing predicted probabilities
-campaign_range <- data.frame(campaign = 1:10)
-predicted_probs <- predict(logistic_model, 
-                          newdata = campaign_range, 
-                          type = "response")
-
-pred_df <- data.frame(
-  campaign = campaign_range$campaign,
-  prob = predicted_probs
-)
-
-# Creating visualization
-ggplot(pred_df, aes(x = campaign, y = prob)) +
-  geom_line() +
-  geom_point() +
-  labs(
-    title = "Predicted Probability of Subscription by Number of Campaigns",
-    x = "Number of Campaign Contacts",
-    y = "Predicted Probability of Subscription"
-  ) +
-  theme_minimal() +
-  scale_y_continuous(labels = scales::percent)
-
-# Display results
 print(model_results)
-print(model_fit)
 ```
 
-Now interpretting the results obtained, 
+Based on the logistic regression model results, I can see that the coefficient for the campaign variable is -0.1225, which is statistically significant with a p-value less than 0.0001. This negative coefficient indicates that each additional campaign contact is associated with a decrease in the log-odds of a customer subscribing to a term deposit.
 
-1. **Model Coefficients**:
-   - The coefficient for campaign (B1) is `r round(coef(logistic_model)[2], 4)`, indicating a negative relationship
-   - This translates to an odds ratio of `r round(odds_ratios[2], 4)`, meaning the odds of subscription decrease by `r round((1-odds_ratios[2])*100, 1)`% for each additional contact
+The odds ratio for the campaign variable is approximately 0.885. This means that for each additional campaign contact, the odds of a customer subscribing to a term deposit decrease by about 11.5% (since 1 - 0.885 = 0.115). The 95% confidence interval for the odds ratio ranges from 0.868 to 0.901, which does not include 1, further confirming the statistical significance of this finding.
 
-2. **Statistical Significance**:
-   - The p-value for campaign (`r format.pval(summary_stats$coefficients[2,4], digits=4)`) indicates the relationship is statistically significant
-   - The 95% confidence interval for the odds ratio doesn't include 1, confirming the significance
-
-3. **Model Fit**:
-   - McFadden's $R^2$ of `r round(1 - (logistic_model$deviance/logistic_model$null.deviance), 4)` suggests moderate predictive power
-   - The negative coefficient and visualization demonstrate that more campaign contacts are associated with lower subscription probability
-
-So by concluding, the analysis strongly suggests that increasing the number of campaign contacts is not effective at producing subscriptions. In fact, each additional contact is associated with significantly lower odds of subscription, supporting our earlier findings about the diminishing returns of repeated contacts.
+Ok so in practical terms, this suggests that increasing the number of campaign contacts is not effective in producing more subscriptions. In fact, it appears to have a diminishing return, where more contacts actually reduce the likelihood of a customer subscribing. This insight can help in optimizing marketing strategies by focusing on fewer, more impactful contacts rather than repeatedly contacting the same customers.
 
 
 ## 1e [5 points] What is the probability of a person with zero contacts (i.e. campaign=0) subscribing to a term deposit? What is the probability of a person with one contacts (i.e. campaign=1) subscribing to a term deposit? What is the probability of a person with two contacts (i.e. campaign=2) subscribing to a term deposit?
 
-## 1e. Probability Calculations for Different Contact Numbers
 
 Using the fitted logistic regression model, one can calculate the probability of subscription for different numbers of contacts using the formula:
 
@@ -386,7 +344,6 @@ knitr::kable(
 
 ## 1f. [20 points] Estimate a logistic regression model using the variable campaign as a predictor along with the following other variables: job, marital, education, default, housing, loan, contact, age, and campaign. Consider the form in which age should enter the model (i.e. categorical, continuous, transformed) and choose the best option for this model. Are more campaign contacts effective at producing subscriptions to term deposits conditional on the additional predictors?
 
-## 1f. Multivariate Logistic Regression Analysis
 
 First, let me examine age distribution to determine its appropriate form in the model:
 
