@@ -383,68 +383,37 @@ Age has a small but positive effect, suggesting that older clients have a margin
 
 ## 1g. [10 points] For the model estimated in 1f, what is an interpretation of the coefficient for campaign?
 
-## Interpretation of Campaign Coefficient
-
 The coefficient for campaign in the multivariate logistic model represents the change in log-odds of subscription for each additional contact, holding all other variables constant.
 
 ```{r}
-# Extracting campaign coefficient and related statistics
-campaign_coef <- coef(full_model)["campaign"]
-campaign_OR <- exp(campaign_coef)
-campaign_CI <- exp(confint(full_model))["campaign", ]
-
-# Creating detailed interpretation table
-interpretation_stats <- data.frame(
-  Metric = c("Log-odds coefficient (β)", 
-             "Odds Ratio", 
-             "Percentage change in odds",
-             "95% CI Lower",
-             "95% CI Upper",
-             "p-value"),
-  Value = c(
-    round(campaign_coef, 4),
-    round(campaign_OR, 4),
-    round((campaign_OR - 1) * 100, 2),
-    round(campaign_CI[1], 4),
-    round(campaign_CI[2], 4),
-    format.pval(summary(full_model)$coefficients["campaign", "Pr(>|z|)"], digits = 4)
-  )
+model_full <- glm(
+  subscribed_numeric ~ campaign + job + marital + education + default + housing +
+    loan + contact + age,
+  data = deposit,
+  family = binomial
 )
 
-# Displaying interpretation statistics
-knitr::kable(
-  interpretation_stats,
-  caption = "Campaign Coefficient Interpretation Statistics",
-  align = c('l', 'r')
+# Summary of the model
+summary(model_full)
+
+# Calculate odds ratio and confidence intervals for campaign
+odds_ratios <- exp(coef(model_full))
+conf_intervals <- exp(confint(model_full))
+
+# Extract campaign coefficient results
+campaign_results <- data.frame(
+  Coefficient = coef(model_full)["campaign"],
+  Odds_Ratio = odds_ratios["campaign"],
+  CI_Lower = conf_intervals["campaign", 1],
+  CI_Upper = conf_intervals["campaign", 2]
 )
+
+print("Campaign Coefficient Results")
+print(campaign_results)
 ```
 
-Now talking about the mathematical interpretation
+From this logistic regression model, the negative coefficient (−0.1225) for campaign indicates that each additional contact decreases the log-odds of subscribing. Interpreted as an odds ratio of about 0.885, it means each extra call lowers the odds of subscription by roughly 11.5% (since 1 - 0.885 = 0.115). The 95% confidence interval (0.867 to 0.902) does not include 1, confirming that this effect is statistically significant and suggesting more calls may actually reduce the likelihood of subscribing.
 
-The logistic regression equation for the campaign variable, holding other variables constant:
-
-$$
-\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_{\text{campaign}} \times \text{campaign} + \text{other variables}
-$$
-
-where $\beta_{\text{campaign}} = `r round(campaign_coef, 4)`$
-
-Now coming to the practical interpretations:
-
-1. **Log-odds scale**: 
-   - For each additional campaign contact, the log-odds of subscription decrease by `r abs(round(campaign_coef, 4))` units, holding other variables constant
-
-2. **Odds scale**: 
-   - The odds ratio of `r round(campaign_OR, 4)` means that for each additional campaign contact, the odds of subscription decrease by `r abs(round((1-campaign_OR)*100, 1))`%, controlling for other variables
-   
-3. **Statistical significance**:
-   - The effect is statistically significant (p < `r format.pval(summary(full_model)$coefficients["campaign", "Pr(>|z|)"], digits=4)`)
-   - We can be 95% confident that the true odds ratio lies between `r round(campaign_CI[1], 4)` and `r round(campaign_CI[2], 4)`
-
-So in a business perspective, even after accounting for demographic and financial characteristics:
-- Additional campaign contacts are associated with lower subscription probability
-- Each contact reduces the odds of subscription by approximately `r abs(round((1-campaign_OR)*100, 1))`%
-- The negative relationship is consistent and statistically significant
 
 ## 1h. [10 points] Use the likelihood ratio test discussed in class to evaluate whether the model in 1f is a better fit than the model in 1d.
 
