@@ -1,32 +1,94 @@
-n = 808
-27% 808 = 218
-not hiv infected = 808-218 = 590
-p and hiv = 16
-25% of total is not pregnant
-total not pregnant 142/0.25 = 568
+```{r}
+data <- read.table("/Users/namomac/Downloads/spacshu.dat")
+names(data) <- c("temp", "damage")
 
-total pregnant women = 808-568 = 240
+# Create temperature categories
+data$temp_cat <- cut(data$temp, 
+                     breaks = c(0, 60, 65, 70, 75, Inf),
+                     labels = c("<=60", "61-65", "66-70", "71-75", ">=75"))
 
-                HIV infected                HIV not infected        total
-pregnant            16                             224                 240
-not pregnant        142                             426                568
-Total               158                              650                   808
+data
+```
+```{r}
+# 1. Calculate cell probabilities
+cell_probs <- aggregate(damage ~ temp_cat, data = data, 
+                       FUN = function(x) c(mean(x), length(x)))
+cell_probs <- do.call(data.frame, cell_probs)
+names(cell_probs) <- c("temp_cat", "probability", "count")
+cell_probs
+```
+> cell_probs
+  temp_cat probability count
+1     <=60  0.22222222    18
+2    61-65  0.16666667     6
+3    66-70  0.03333333    60
+4    71-75  0.08333333    24
+5     >=75  0.00000000    30
 
+```{r}
+cell_counts <- table(data)
+total_observations <- sum(cell_counts)
+cell_probabilities <- cell_counts / total_observations
 
+cell_probabilities
+```
 
+```{r}
+# 2. Calculate Relative Risk
+# For "Lower than 60" vs "Equal or higher than 75"
+lower_than_60 <- data[data$Temp < 60, ]
+equal_or_higher_75 <- data[data$Temp >= 75, ]
 
-n = 826
-13% 826 = 108
-not hiv infected = 718
-p and hiv = 8
-11% of total is not pregnant
-total not pregnant 75/0.11 = 682
+risk_lower_60 <- sum(lower_than_60$Failure) / nrow(lower_than_60)
+risk_higher_75 <- sum(equal_or_higher_75$Failure) / nrow(equal_or_higher_75)
 
-total pregnant women = 826-682 = 144
+relative_risk <- risk_lower_60 / risk_higher_75
 
+relative_risk
+```
 
+```{r}
+# 3 & 4. Calculate Odds Ratios
+odds_lower_60 <- sum(lower_than_60$Failure) / sum(lower_than_60$Failure == 0)
 
-                HIV infected                HIV not infected        total
-pregnant            8                             674                 682
-not pregnant        75                           69                   144
-Total               83                              743                  826
+odds_lower_60
+
+odds_higher_75 <- sum(equal_or_higher_75$Failure) / sum(equal_or_higher_75$Failure == 0)
+
+odds_higher_75
+```
+```{r}
+# Difference between Odds Ratios
+difference_odds_ratios <- odds_higher_75 - odds_lower_60
+
+difference_odds_ratios
+```
+```{r}
+# 6. Fit logistic regression model
+# Create dummy variables for temperature categories
+# Create categorical variable for Temp
+data$TempCat <- factor(data$Temp, levels = c(55, 60, 65, 70, 75))
+
+# Fit logistic regression model
+model <- glm(Failure ~ TempCat, data = data, family = binomial)
+
+summary(model)
+```
+Coefficients:
+               Estimate Std. Error z value Pr(>|z|)  
+(Intercept)     -0.6931     0.8660  -0.800   0.4235  
+temp_cat56-60   -0.9163     1.1619  -0.789   0.4303  
+temp_cat61-65   -0.9163     1.3964  -0.656   0.5117  
+temp_cat66-70   -2.6741     1.1257  -2.376   0.0175 *
+temp_cat71-75   -1.7047     1.1382  -1.498   0.1342  
+temp_cat>=75   -18.8729  1963.4054  -0.010   0.9923  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 66.540  on 137  degrees of freedom
+Residual deviance: 55.164  on 132  degrees of freedom
+AIC: 67.164
+
+Number of Fisher Scoring iterations: 18
