@@ -253,23 +253,22 @@ $$
 where $p$ is the probability of subscribing to a term deposit.
 
 ```{r}
-# Convert 'subscribed' to numeric if not already done
 deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
 
-# Fit a logistic regression model with 'campaign' as the only predictor
+# Fitting a logistic regression model with 'campaign' as the only predictor
 logistic_model <- glm(subscribed_num ~ campaign,
                       data = deposit_data,
                       family = binomial)
 
-# Summarize the model
+# Summarizing the model
 model_summary <- summary(logistic_model)
 print(model_summary)
 
-# Calculate odds ratios and confidence intervals
+# Calculating odds ratios and confidence intervals
 odds_ratios <- exp(coef(logistic_model))
 conf_int <- exp(confint(logistic_model))
 
-# Combine results in a data frame
+# Combining results in a data frame
 model_results <- data.frame(
   Coefficient = coef(logistic_model),
   Std_Error = model_summary$coefficients[, "Std. Error"],
@@ -286,7 +285,7 @@ Based on the logistic regression model results, I can see that the coefficient f
 
 The odds ratio for the campaign variable is approximately 0.885. This means that for each additional campaign contact, the odds of a customer subscribing to a term deposit decrease by about 11.5% (since 1 - 0.885 = 0.115). The 95% confidence interval for the odds ratio ranges from 0.868 to 0.901, which does not include 1, further confirming the statistical significance of this finding.
 
-Ok so in practical terms, this suggests that increasing the number of campaign contacts is not effective in producing more subscriptions. In fact, it appears to have a diminishing return, where more contacts actually reduce the likelihood of a customer subscribing. This insight can help in optimizing marketing strategies by focusing on fewer, more impactful contacts rather than repeatedly contacting the same customers.
+Ok so in practical terms, this suggests that increasing the number of campaign contacts is not effective in producing more subscriptions. In fact, it appears to have a diminishing return, where more contacts actually reduce the likelihood of a customer subscribing. Interestingly, this insight can help in optimizing marketing strategies by focusing on fewer, more impactful contacts rather than repeatedly contacting the same customers.
 
 
 ## 1e [5 points] What is the probability of a person with zero contacts (i.e. campaign=0) subscribing to a term deposit? What is the probability of a person with one contacts (i.e. campaign=1) subscribing to a term deposit? What is the probability of a person with two contacts (i.e. campaign=2) subscribing to a term deposit?
@@ -299,47 +298,28 @@ P(\text{subscription}) = \frac{e^{\beta_0 + \beta_1 \times \text{campaign}}}{1 +
 $$
 
 ```{r}
-# Creating new data for predictions
+deposit_data$subscribed_num <- ifelse(deposit_data$subscribed == "yes", 1, 0)
+
+# Creating new data for prediction
 new_data <- data.frame(campaign = c(0, 1, 2))
 
-# Calculating predicted probabilities
-predicted_probs <- predict(logistic_model, 
-                          newdata = new_data, 
-                          type = "response")
+# Computing predicted probabilities
+predicted_probs <- predict(logistic_model,
+                           newdata = new_data,
+                           type = "response")
 
-# Combining results
+# Combining results into a table
 prob_table <- data.frame(
   Contacts = new_data$campaign,
   Probability = predicted_probs
 )
 
-# Displaying results in formatted table
-knitr::kable(
-  prob_table,
-  caption = "Predicted Probabilities of Subscription by Number of Contacts",
-  col.names = c("Number of Contacts", "Probability of Subscription"),
-  digits = 4,
-  align = c('c', 'c')
-)
-
-# Calculating log-odds for each scenario
-log_odds <- predict(logistic_model, newdata = new_data, type = "link")
-calculations <- data.frame(
-  Contacts = new_data$campaign,
-  Log_Odds = log_odds,
-  Odds = exp(log_odds),
-  Probability = predicted_probs
-)
-
-# Displaying detailed calculations
-knitr::kable(
-  calculations,
-  caption = "Step-by-step Probability Calculations",
-  col.names = c("Contacts", "Log-Odds", "Odds", "Probability"),
-  digits = 4,
-  align = c('c', 'c', 'c', 'c')
-)
+print(prob_table)
 ```
+
+Based on the logistic regression model, I calculated the probabilities of a person subscribing to a term deposit given different numbers of campaign contacts. For a person with zero contacts, the probability of subscribing is approximately 15.2%. If the person is contacted once, the probability decreases to about 13.7%. With two contacts, the probability further decreases to around 12.3%.
+
+This result aligns with the earlier findings that increasing the number of campaign contacts tends to reduce the likelihood of a customer subscribing to a term deposit. It suggests that the first contact is the most impactful, and additional contacts may not only fail to increase the subscription rate but might actually deter potential subscribers. This insight can help in refining marketing strategies to focus on making the initial contact as effective as possible, rather than relying on multiple follow-up calls.
 
 
 ## 1f. [20 points] Estimate a logistic regression model using the variable campaign as a predictor along with the following other variables: job, marital, education, default, housing, loan, contact, age, and campaign. Consider the form in which age should enter the model (i.e. categorical, continuous, transformed) and choose the best option for this model. Are more campaign contacts effective at producing subscriptions to term deposits conditional on the additional predictors?
@@ -348,130 +328,57 @@ knitr::kable(
 First, let me examine age distribution to determine its appropriate form in the model:
 
 ```{r}
-# Examining age relationship with empirical logit
-ggplot(empirical_logits, aes(x = age, y = emp_logit)) +
-  geom_point() +
-  geom_smooth(method = "loess", se = TRUE) +
-  labs(title = "Age vs Empirical Logit",
-       x = "Age",
-       y = "Empirical Logit") +
+library(dplyr)
+library(ggplot2)
+library(car)
+
+# Reading data
+deposit <- read.csv("deposit-1.csv")
+# Converting subscribed to numeric
+deposit$subscribed_numeric <- ifelse(deposit$subscribed == "yes", 1, 0)
+
+# Plotting a histogram to check the distribution of age
+ggplot(deposit, aes(x = age)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Distribution of Age",
+    x = "Age",
+    y = "Frequency"
+  ) +
   theme_minimal()
 
-# Creating age categories based on quartiles
-deposit_data <- deposit_data %>%
-  mutate(age_cat = cut(age, 
-                       breaks = quantile(age, probs = c(0, 0.25, 0.5, 0.75, 1)),
-                       labels = c("Q1", "Q2", "Q3", "Q4"),
-                       include.lowest = TRUE))
-
-# Fitting the multivariate logistic regression
-full_model <- glm(subscribed_num ~ 
-                  age_cat +          # Age as categorical (based on quartiles)
-                  job + 
-                  marital + 
-                  education + 
-                  default + 
-                  housing + 
-                  loan + 
-                  contact + 
-                  campaign,
-                data = deposit_data,
-                family = binomial)
-
-# Creating summary with odds ratios
-summary_stats <- summary(full_model)
-odds_ratios <- exp(coef(full_model))
-conf_intervals <- exp(confint(full_model))
-
-# Combining results
-model_results <- data.frame(
-  Variable = names(coef(full_model)),
-  Coefficient = coef(full_model),
-  Std_Error = summary_stats$coefficients[,2],
-  z_value = summary_stats$coefficients[,3],
-  p_value = summary_stats$coefficients[,4],
-  Odds_Ratio = odds_ratios,
-  CI_Lower = conf_intervals[,1],
-  CI_Upper = conf_intervals[,2]
-)
-
-# Displaying results
-knitr::kable(
-  model_results,
-  caption = "Multivariate Logistic Regression Results",
-  digits = 4,
-  align = 'c',
-  col.names = c("Variable", "β", "SE", "z-value", "p-value", "OR", "95% CI Lower", "95% CI Upper")
-)
-
-# Model fit statistics
-model_fit <- data.frame(
-  Metric = c("Null Deviance", "Residual Deviance", "AIC", "McFadden R²"),
-  Value = c(
-    full_model$null.deviance,
-    full_model$deviance,
-    full_model$aic,
-    1 - (full_model$deviance/full_model$null.deviance)
+# Converting categorical variables to factors
+deposit <- deposit %>%
+  mutate(
+    job = as.factor(job),
+    marital = as.factor(marital),
+    education = as.factor(education),
+    default = as.factor(default),
+    housing = as.factor(housing),
+    loan = as.factor(loan),
+    contact = as.factor(contact)
   )
+
+# Fitting the logistic regression model with all relevant predictors
+model_full <- glm(
+  subscribed_numeric ~ campaign + job + marital + education + default + 
+    housing + loan + contact + age,
+  data = deposit,
+  family = binomial
 )
 
-knitr::kable(
-  model_fit,
-  caption = "Model Fit Statistics",
-  digits = 4
-)
+# Summarizing the model
+summary(model_full)
 
-# Visualizing campaign effect while controlling for other variables
-pred_data <- expand.grid(
-  campaign = 1:10,
-  age_cat = "Q2",                # Reference level
-  job = "management",            # Most common category
-  marital = "married",
-  education = "secondary",
-  default = "no",
-  housing = "no",
-  loan = "no",
-  contact = "cellular"
-)
-
-predicted_probs <- predict(full_model, 
-                          newdata = pred_data, 
-                          type = "response")
-
-ggplot(data.frame(campaign = pred_data$campaign, 
-                  probability = predicted_probs), 
-       aes(x = campaign, y = probability)) +
-  geom_line() +
-  geom_point() +
-  labs(
-    title = "Adjusted Probability of Subscription by Campaign Contacts",
-    x = "Number of Campaign Contacts",
-    y = "Predicted Probability of Subscription",
-    caption = "Adjusted for other predictors held at reference levels"
-  ) +
-  theme_minimal() +
-  scale_y_continuous(labels = scales::percent)
+# Checking for multicollinearity
+vif(model_full)
 ```
+From this model, each additional campaign contact corresponds to a decrease in the odds of subscribing (negative coefficient). 
 
-Now interpreting the results obtained:
+Meanwhile, certain job categories, like retirees and students, show higher odds of subscription, whereas blue-collar workers and housemaids exhibit lower odds. 
+Married individuals are slightly less likely to subscribe than singles, and having housing or personal loans further reduces the likelihood of subscribing. 
 
-1. **Age Treatment**:
-   - Based on the empirical logit plot, age shows a non-linear relationship
-   - Categorized age into quartiles to capture non-linear effects
-   
-2. **Campaign Effect**:
-   - Coefficient for campaign: $\beta_{campaign}$ = `r round(coef(full_model)["campaign"], 4)`
-   - Odds ratio = `r round(exp(coef(full_model)["campaign"]), 4)`
-   - Still shows negative effect even after controlling for other variables
-
-3. **Model Fit**:
-   - McFadden's $R^2$ = `r round(1 - (full_model$deviance/full_model$null.deviance), 4)`
-   - Significant improvement over campaign-only model
-
-4. **Key Findings**:
-   - Campaign contacts remain negatively associated with subscription probability
-   - Effect persists after controlling for demographic and financial characteristics
-   - Other significant predictors include age, education, and contact method
+Age has a small but positive effect, suggesting that older clients have a marginally higher chance of subscribing. Overall, the model seems to fit well, and the VIF values indicate no serious multicollinearity concerns.
 
 
 ## 1g. [10 points] For the model estimated in 1f, what is an interpretation of the coefficient for campaign?
