@@ -200,45 +200,39 @@ campaign_props <- deposit_data %>%
   summarize(
     total = n(),
     subscribed_yes = sum(subscribed == "yes"),
-    proportion = round(subscribed_yes/total, 4)
+    proportion = round(subscribed_yes / total, 4)
   ) %>%
   mutate(campaign_group = factor(campaign_group, 
-                                levels = c("1", "2", "3", "4", "5", "6+")))
+                                 levels = c("1", "2", "3", "4", "5", "6+")))
 
-# Creating the plot
+# Creating the bar plot of proportions
+library(ggplot2)
 ggplot(campaign_props, aes(x = campaign_group, y = proportion)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   geom_text(aes(label = scales::percent(proportion, accuracy = 0.1)),
             vjust = -0.5) +
   labs(
     title = "Proportion of Subscriptions by Number of Campaign Contacts",
-    x = "Number of Contacts",
+    x = "Number of Campaign Contacts",
     y = "Proportion Subscribed",
     caption = "Note: 6+ represents six or more contacts"
   ) +
   theme_minimal() +
-  scale_y_continuous(labels = scales::percent, limits = c(0, max(campaign_props$proportion) * 1.2))
-
-# Displaying the summary table
-knitr::kable(
-  campaign_props,
-  col.names = c("Campaign Contacts", "Total Customers", "Subscribed", "Proportion"),
-  caption = "Subscription rates by number of campaign contacts",
-  digits = 4
-)
+  scale_y_continuous(labels = scales::percent)
 ```
 
+From the bar plot:
 
+1. The proportion of clients subscribing decreases as the number of campaign contacts increases. For example:
 
-Alright, so looking at the results of the campaign contact analysis, the most striking finding is that our first contact attempt is actually our most successful, with about 14.5% of customers subscribing. There's a clear downward trend after that the success rate drops with each additional contact. By the second contact, it is down to 11.4%, and it keeps declining steadily.
+* The highest subscription rate is observed at 1 contact.
 
-What's particularly concerning is that when I reach out 6 or more times, the success rate plummets to just 6.2%. This suggests that persistently contacting reluctant customers might not be the best strategy. In fact, one might be better off focusing these resources on making that first contact count, rather than making repeated attempts with the same customers.
+* The subscription rate continues to drop with more contacts, reaching its lowest for 6+ contacts.
 
-This data tells me one should probably rethink the follow-up strategy. Instead of making multiple attempts with the same customers, one might get better results by:
+2. Now the diminishing returns with additional contacts suggests that beyond a certain point, increasing the number of calls may not be effective in converting clients and could even have a negative impact.
 
-1. Investing more in making that first contact as effective as possible
-2. Moving on to fresh prospects after 2-3 unsuccessful attempts
-3. Analyzing what makes the first contacts more successful and applying those lessons
+3. Focusing on fewer but more targeted contacts might be a more efficient strategy for maximizing subscriptions while minimizing costs.
+
 
 ## 1d. [15 points] Next, we want to evaluate if campaign contacts are effective. Estimate a logistic regression model using the variable campaign as a predictor of subscribed=yes. Are more campaign contacts effective at producing subscriptions to term deposits?
 
