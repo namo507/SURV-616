@@ -90,7 +90,7 @@ cat("Difference between Odds Ratios:", difference_odds_ratios, "\n")
 data$TempCat <- factor(data$Temp, levels = c(55, 60, 65, 70, 75))
 
 # Fit logistic regression model
-model <- glm(Failure ~ TempCat, data = data, family = binomial)
+model <- glm(Damage ~ TempCat, data = data, family = binomial)
 
 summary(model)
 ```
@@ -112,3 +112,45 @@ Residual deviance: 55.164  on 132  degrees of freedom
 AIC: 67.164
 
 Number of Fisher Scoring iterations: 18
+
+
+
+
+
+
+
+
+
+Relative Risk
+```{r}
+dead <- c(73, 2)    # Dead: Conc > 0, Conc = 0
+alive <- c(47, 28)  # Alive: Conc > 0, Conc = 0
+
+prospective_table <- matrix(c(dead, alive), nrow = 2, byrow = TRUE)
+colnames(prospective_table) <- c("Conc > 0", "Conc = 0")
+rownames(prospective_table) <- c("Dead", "Alive")
+
+risk_conc_greater_0 <- prospective_table[1, 1] / (prospective_table[1, 1] + prospective_table[2, 1])
+risk_conc_equal_0 <- prospective_table[1, 2] / (prospective_table[1, 2] + prospective_table[2, 2])
+relative_risk <- risk_conc_greater_0 / risk_conc_equal_0
+
+relative_risk
+```
+
+Odds ratio
+
+```{r}
+case <- c(73, 2)    # Cases: Conc > 0, Conc = 0
+control <- c(47, 28)  # Controls: Conc > 0, Conc = 0
+
+retrospective_table <- matrix(c(case, control), nrow = 2, byrow = TRUE)
+colnames(retrospective_table) <- c("Conc > 0", "Conc = 0")
+rownames(retrospective_table) <- c("Case", "Control")
+
+odds_conc_greater_0 <- retrospective_table[1, 1] / retrospective_table[2, 1]
+odds_conc_equal_0 <- retrospective_table[1, 2] / retrospective_table[2, 2]
+odds_ratio <- odds_conc_greater_0 / odds_conc_equal_0
+
+odds_ratio
+
+```
