@@ -154,3 +154,77 @@ odds_ratio <- odds_conc_greater_0 / odds_conc_equal_0
 odds_ratio
 
 ```
+
+```{r}
+bliss <- read.csv("Bliss_caselevel_cont.csv")
+
+# Examine the dataset structure and summary
+str(bliss)
+summary(bliss)
+
+# Assuming the dataset has variables:
+# - dead (0/1 indicator: 1 = dead, 0 = alive)
+# - Conc3 (continuous concentration variable)
+
+# 2. Visualize the data:
+# Plotting the binary outcome vs. continuous predictor with jittering
+plot(jitter(bliss$Conc3), bliss$dead,
+     xlab = "Concentration (Conc3)",
+     ylab = "Dead (0 = Alive, 1 = Dead)",
+     main = "Death by Concentration (Conc3)",
+     pch = 19, col = "blue")
+```
+
+```{r}
+# 3. Fit a logistic regression with a single predictor
+glm1 <- glm(Dead ~ Conc3, data = bliss, family = binomial(link = "logit"))
+summary(glm1)
+
+# Print the residual deviance for glm1:
+cat("Residual deviance (Conc3 model):", glm1$deviance, "\n")
+# 4. Fit the null model (intercept only)
+glm_null <- glm(Dead ~ 1, data = bliss, family = binomial)
+cat("Residual deviance (null model):", glm_null$deviance, "\n")
+
+# Compare the null model to the model with the predictor 'Conc3'
+anova(glm_null, glm1, test = "Chisq")
+
+# 5. Fit a logistic regression model with a quadratic term:
+glm2 <- glm(Dead ~ Conc3 + I(Conc3^2), data = bliss, family = binomial)
+summary(glm2)
+
+# Compare the nested models (glm1 vs. glm2)
+anova(glm1, glm2, test = "Chisq")
+```
+```{r}
+# Based on the comparison (via the chi-square test), you can decide 
+# whether the extra quadratic term significantly improves the model fit.
+# For example, if the p-value is below 0.05, the quadratic term is recommended.
+
+# 6. Examine residuals from the quadratic model (glm2)
+# Pearson residuals:
+pearson_res <- residuals(glm2, type = "pearson")
+# Deviance residuals:
+deviance_res <- residuals(glm2, type = "deviance")
+# Working residuals:
+working_res <- residuals(glm2, type = "working")
+par(mfrow = c(1, 3))
+plot(pearson_res, main = "Pearson Residuals", ylab = "Residual", xlab = "Index", pch = 19)
+plot(deviance_res, main = "Deviance Residuals", ylab = "Residual", xlab = "Index", pch = 19)
+plot(working_res, main = "Working Residuals", ylab = "Residual", xlab = "Index", pch = 19)
+par(mfrow = c(1, 1))
+```
+```{r}
+# 7. Compute dfbeta:
+# This calculates the change in each coefficient when a case is dropped.
+dfbeta_vals <- dfbeta(glm2)
+
+# Print a summary of dfbeta values for each coefficient
+print(apply(dfbeta_vals, 2, summary))
+
+# Optionally, you may also visualize the dfbeta for each observation:
+matplot(dfbeta_vals, type = "h", lty = 1, col = 1:ncol(dfbeta_vals),
+        main = "DFBETA values", xlab = "Observation", ylab = "Change in Coefficient")
+legend("topright", legend = colnames(dfbeta_vals), col = 1:ncol(dfbeta_vals), lty = 1)
+```
+
