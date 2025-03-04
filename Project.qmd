@@ -1,0 +1,689 @@
+---
+title: "Project 1: Namit Shrivastava"
+format: pdf
+editor: visual
+---
+
+Part 1: Preliminary Analysis (10 points)
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(corrplot)
+library(car)
+library(gridExtra)
+
+# Read the data
+chd_data <- read.csv("chd.csv")
+
+# 1.1 Look at the data structure and summary
+str(chd_data)
+summary(chd_data)
+
+# 1.2 Check for missing values
+sum(is.na(chd_data))
+
+# 1.3 Convert famhist to factor
+chd_data$famhist <- as.factor(chd_data$famhist)
+chd_data$chd <- as.factor(chd_data$chd)
+
+# 1.4 Univariate analysis: create histograms for continuous variables
+# Create a function to plot histograms
+hist_plot <- function(var, data) {
+  ggplot(data, aes_string(x = var)) +
+    geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.7) +
+    labs(title = paste("Distribution of", var)) +
+    theme_minimal()
+}
+
+# Apply the function to all continuous variables
+cont_vars <- c("sbp", "tobacco", "ldl", "adiposity", "typea", "obesity", "alcohol", "age")
+hist_plots <- lapply(cont_vars, hist_plot, data = chd_data)
+
+# Display the histograms in a grid layout
+grid.arrange(grobs = hist_plots, ncol = 3)
+
+# 1.5 Bivariate analysis: Boxplots of predictors by CHD status
+# Create a function to generate boxplots
+box_plot <- function(var, data) {
+  ggplot(data, aes_string(x = "chd", y = var)) +
+    geom_boxplot(fill = "steelblue", alpha = 0.7) +
+    labs(title = paste(var, "by CHD status")) +
+    theme_minimal()
+}
+
+# Apply to continuous variables
+box_plots <- lapply(cont_vars, box_plot, data = chd_data)
+
+# Display the boxplots
+grid.arrange(grobs = box_plots, ncol = 3)
+
+# 1.6 Create empirical logit plots for continuous predictors
+# Function to create empirical logit plots
+empirical_logit_plot <- function(var, data, bins = 10) {
+  # Create bins for the continuous variable
+  data$bin <- cut(data[[var]], breaks = bins)
+  
+  # Calculate proportion with CHD in each bin
+  emp_logit <- data %>%
+    group_by(bin) %>%
+    summarize(
+      n = n(),
+      successes = sum(chd == "1"),
+      p = successes / n,
+      emp_logit = log((p + 1/(2*n)) / (1 - p + 1/(2*n))),
+      mid_point = mean(as.numeric(data[[var]][bin == bin[1]]))
+    )
+  
+  # Create the empirical logit plot
+  ggplot(emp_logit, aes(x = mid_point, y = emp_logit)) +
+    geom_point(size = 3) +
+    geom_smooth(method = "loess", se = TRUE) +
+    labs(title = paste("Empirical Logit Plot for", var),
+         x = var,
+         y = "Empirical Logit") +
+    theme_minimal()
+}
+
+# Generate empirical logit plots for continuous variables
+emp_logit_plots <- lapply(cont_vars, empirical_logit_plot, data = chd_data)
+
+# Display the empirical logit plots
+grid.arrange(grobs = emp_logit_plots[1:4], ncol = 2)
+grid.arrange(grobs = emp_logit_plots[5:8], ncol = 2)
+
+# 1.7 Correlation matrix of predictors
+corr_matrix <- cor(chd_data[,cont_vars])
+corrplot(corr_matrix, method = "circle", type = "upper", 
+         tl.col = "black", tl.srt = 45,
+         title = "Correlation Matrix of Predictors")
+
+# 1.8 Look at famhist and chd relationship
+table_famhist <- table(chd_data$famhist, chd_data$chd)
+prop.table(table_famhist, 1)
+chisq.test(table_famhist)
+```
+
+
+Part 2: Predictor Selection and Transformations (10 points)
+
+```{r}
+# 2.1 Initial univariate logistic regression models to check individual variable importance
+uni_models <- lapply(c(cont_vars, "famhist"), function(var) {
+  formula <- as.formula(paste("chd ~", var))
+  model <- glm(formula, data = chd_data, family = binomial)
+  return(list(variable = var, 
+              coef = coef(model)[2], 
+              p_value = summary(model)$coefficients[2,4],
+              AIC = AIC(model)))
+})
+
+# Convert list of lists to data frame
+uni_results <- do.call(rbind.data.frame, uni_models)
+uni_results <- uni_results[order(uni_results$AIC),]
+print(uni_results)
+
+# 2.2 Check for potential transformations using Box-Tidwell
+# First, fit a model with all continuous variables
+full_model <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
+                    obesity + alcohol + age + famhist, 
+                 data = chd_data, family = binomial)
+
+# Function to check linearity assumption for each continuous variable
+check_nonlinearity <- function(var, data) {
+  formula <- as.formula(paste("chd ~", var, "+", "I(", var, "^2)"))
+  model <- glm(formula, data = data, family = binomial)
+  
+  # Check if quadratic term is significant
+  p_value <- summary(model)$coefficients[3,4]
+  quad_effect <- ifelse(p_value < 0.05, "Significant", "Not Significant")
+  
+  return(list(variable = var, p_value = p_value, quadratic_effect = quad_effect))
+}
+
+# Apply the function to check nonlinearity 
+nonlinearity_check <- lapply(cont_vars, check_nonlinearity, data = chd_data)
+nonlinearity_results <- do.call(rbind.data.frame, nonlinearity_check)
+print(nonlinearity_results)
+
+# 2.3 Apply transformations based on nonlinearity check
+# Example for age (if needed):
+chd_data$age_squared <- chd_data$age^2
+
+# 2.4 Check for potential interactions (focus on meaningful interactions)
+interactions_to_check <- list(
+  c("age", "tobacco"),
+  c("sbp", "obesity"),
+  c("ldl", "famhist"),
+  c("tobacco", "famhist")
+)
+
+# Function to test interactions
+test_interaction <- function(vars, data) {
+  formula <- as.formula(paste("chd ~", vars[1], "*", vars[2]))
+  model <- glm(formula, data = data, family = binomial)
+  
+  # Check if interaction is significant
+  interaction_term <- paste(vars[1], ":", vars[2])
+  p_value <- summary(model)$coefficients[interaction_term,4]
+  
+  return(list(interaction = paste(vars[1], "x", vars[2]), 
+              p_value = p_value, 
+              significant = p_value < 0.05))
+}
+
+# Apply function to check interactions
+interaction_results <- lapply(interactions_to_check, test_interaction, data = chd_data)
+interaction_results <- do.call(rbind.data.frame, interaction_results)
+print(interaction_results)
+
+# 2.5 Build candidate models based on findings
+# Base model with all original predictors
+model1 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
+                obesity + alcohol + age + famhist, 
+             data = chd_data, family = binomial)
+
+# Model with transformed variables (example)
+model2 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
+                obesity + alcohol + age + age_squared + famhist, 
+             data = chd_data, family = binomial)
+
+# Model with significant interactions (example)
+model3 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
+                obesity + alcohol + age + famhist + tobacco:age, 
+             data = chd_data, family = binomial)
+
+# Compare models using AIC
+AIC(model1, model2, model3)
+```
+
+Part 3: Model Fit Assessment (10 points)
+
+```{r}
+# 3.1 Assess model fit using likelihood ratio tests
+anova(model1, model2, test = "Chisq")
+anova(model1, model3, test = "Chisq")
+
+# 3.2 Compare AIC and BIC
+models_comparison <- data.frame(
+  Model = c("Base Model", "With Transformed Variables", "With Interactions"),
+  AIC = c(AIC(model1), AIC(model2), AIC(model3)),
+  BIC = c(BIC(model1), BIC(model2), BIC(model3)),
+  Deviance = c(deviance(model1), deviance(model2), deviance(model3))
+)
+print(models_comparison)
+
+# 3.3 Assess model fit with residual analysis
+# Select final model (assume model3 is best for this example)
+final_model <- model3
+
+# Calculate and plot Pearson residuals
+chd_data$pearson_resid <- residuals(final_model, type = "pearson")
+pearson_plot <- ggplot(chd_data, aes(x = fitted(final_model), y = pearson_resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Pearson Residuals vs. Fitted Values",
+       x = "Fitted Values", y = "Pearson Residuals") +
+  theme_minimal()
+print(pearson_plot)
+
+# 3.4 Create binned residual plot (more appropriate for logistic regression)
+library(arm)
+binned_resid_plot <- binnedplot(fitted(final_model), 
+                               residuals(final_model, type = "response"),
+                               xlab = "Predicted Probability",
+                               ylab = "Average Residual",
+                               main = "Binned Residual Plot")
+
+# 3.5 Hosmer-Lemeshow Goodness of Fit Test
+library(ResourceSelection)
+hoslem.test(chd_data$chd == "1", fitted(final_model), g = 10)
+```
+
+Part 4: Predictive Accuracy Assessment (15 points)
+
+```{r}
+# 4.1 Calculate predicted probabilities
+chd_data$pred_prob <- predict(final_model, type = "response")
+
+# 4.2 ROC and AUC calculation
+library(pROC)
+roc_curve <- roc(chd_data$chd, chd_data$pred_prob)
+auc_value <- auc(roc_curve)
+
+# Plot ROC curve
+roc_plot <- plot(roc_curve, main = paste("ROC Curve (AUC =", round(auc_value, 3), ")"))
+
+# 4.3 Find optimal threshold using Youden's J statistic
+optimal_threshold <- coords(roc_curve, "best", ret = "threshold")
+
+# 4.4 Create confusion matrix with the optimal threshold
+chd_data$predicted_class <- ifelse(chd_data$pred_prob >= optimal_threshold, "1", "0")
+conf_matrix <- table(Predicted = chd_data$predicted_class, Actual = chd_data$chd)
+print(conf_matrix)
+
+# Calculate metrics from confusion matrix
+sensitivity <- conf_matrix[2,2] / sum(conf_matrix[,2])
+specificity <- conf_matrix[1,1] / sum(conf_matrix[,1])
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+precision <- conf_matrix[2,2] / sum(conf_matrix[2,])
+f1_score <- 2 * (precision * sensitivity) / (precision + sensitivity)
+
+# Combine metrics in a data frame
+metrics <- data.frame(
+  Metric = c("Sensitivity", "Specificity", "Accuracy", "Precision", "F1 Score"),
+  Value = c(sensitivity, specificity, accuracy, precision, f1_score)
+)
+print(metrics)
+
+# 4.5 K-fold cross-validation to assess predictive accuracy
+library(caret)
+# Set up 10-fold cross-validation
+set.seed(123)
+folds <- createFolds(chd_data$chd, k = 10)
+
+# Function to perform cross-validation
+cv_results <- lapply(folds, function(test_indices) {
+  # Split data
+  train_data <- chd_data[-test_indices, ]
+  test_data <- chd_data[test_indices, ]
+  
+  # Fit model on training data
+  train_model <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
+                      obesity + alcohol + age + famhist + tobacco:age,
+                    data = train_data, family = binomial)
+  
+  # Predict on test data
+  test_data$pred_prob <- predict(train_model, newdata = test_data, type = "response")
+  test_data$pred_class <- ifelse(test_data$pred_prob >= optimal_threshold, "1", "0")
+  
+  # Calculate metrics
+  conf_mat <- table(Predicted = test_data$pred_class, Actual = test_data$chd)
+  acc <- sum(diag(conf_mat)) / sum(conf_mat)
+  sens <- conf_mat[2,2] / sum(conf_mat[,2])
+  spec <- conf_mat[1,1] / sum(conf_mat[,1])
+  
+  # Calculate AUC
+  if(length(unique(test_data$chd)) > 1) {
+    roc_obj <- roc(test_data$chd, test_data$pred_prob)
+    auc_val <- auc(roc_obj)
+  } else {
+    auc_val <- NA
+  }
+  
+  return(c(Accuracy = acc, Sensitivity = sens, Specificity = spec, AUC = auc_val))
+})
+
+# Combine cross-validation results
+cv_metrics <- do.call(rbind, cv_results)
+cv_summary <- colMeans(cv_metrics, na.rm = TRUE)
+cv_sd <- apply(cv_metrics, 2, sd, na.rm = TRUE)
+
+cv_results_df <- data.frame(
+  Metric = names(cv_summary),
+  Mean = cv_summary,
+  Std_Dev = cv_sd
+)
+print(cv_results_df)
+
+# 4.6 Learning curve to check if more data would improve model
+# (Implementation depends on computational resources and data size)
+```
+
+Explanation and Interpretation of Final Model
+
+```{r}
+# Get summary of final model
+summary(final_model)
+
+# Calculate odds ratios and confidence intervals
+odds_ratios <- exp(coef(final_model))
+conf_intervals <- exp(confint(final_model))
+
+# Combine results
+or_table <- data.frame(
+  Variable = names(odds_ratios),
+  Odds_Ratio = odds_ratios,
+  CI_Lower = conf_intervals[,1],
+  CI_Upper = conf_intervals[,2]
+)
+print(or_table)
+
+# Visualize important coefficients
+coef_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Odds_Ratio)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.2) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(title = "Odds Ratios with 95% Confidence Intervals",
+       x = "Variable", y = "Odds Ratio") +
+  theme_minimal()
+print(coef_plot)
+```
+
+
+Explaining the Final Coronary Heart Disease Prediction Model
+
+Part 1: Understanding the Coefficients (15 points)
+
+```{r}
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(knitr)
+
+# Assuming final_model has been selected from previous analysis
+# Let's recreate it for demonstration
+chd_data <- read.csv("chd.csv")
+chd_data$famhist <- as.factor(chd_data$famhist)
+
+# Creating the final model (this should match your selected model from Part 1)
+final_model <- glm(chd ~ age + tobacco + ldl + sbp + famhist + obesity,
+                  data = chd_data, family = binomial)
+
+# 1.1 Extract model summary and coefficients
+model_summary <- summary(final_model)
+coef_table <- tidy(final_model)
+print(coef_table)
+
+# 1.2 Calculate and interpret odds ratios with confidence intervals
+odds_ratios <- exp(coef(final_model))
+conf_int <- exp(confint(final_model))
+
+# Combine into a table with proper formatting
+or_table <- data.frame(
+  Variable = names(odds_ratios),
+  Coefficient = coef(final_model),
+  Odds_Ratio = odds_ratios,
+  CI_Lower = conf_int[,1],
+  CI_Upper = conf_int[,2]
+)
+
+# Format the table nicely
+kable(or_table, 
+      col.names = c("Variable", "Coefficient (β)", "Odds Ratio", "95% CI Lower", "95% CI Upper"),
+      digits = 3,
+      caption = "Coefficients and Odds Ratios for CHD Prediction Model")
+
+# 1.3 Calculate standardized coefficients to compare relative importance
+# First standardize continuous predictors
+predictors <- c("age", "tobacco", "ldl", "sbp", "obesity")
+chd_data_std <- chd_data
+
+for(var in predictors) {
+  chd_data_std[[paste0(var, "_std")]] <- scale(chd_data[[var]])
+}
+
+# Fit model with standardized predictors
+std_model <- glm(chd ~ age_std + tobacco_std + ldl_std + sbp_std + 
+                   famhist + obesity_std,
+                data = chd_data_std, family = binomial)
+
+# Extract standardized coefficients
+std_coef_table <- tidy(std_model)
+print(std_coef_table)
+
+# 1.4 Calculate average marginal effects
+library(margins)
+marg_effects <- margins(final_model)
+marg_summary <- summary(marg_effects)
+print(marg_summary)
+
+# Create a table of average marginal effects
+me_table <- data.frame(
+  Variable = marg_summary$factor,
+  AME = marg_summary$AME,
+  SE = marg_summary$SE,
+  p_value = marg_summary$p
+)
+
+kable(me_table, 
+      col.names = c("Variable", "Average Marginal Effect", "Standard Error", "p-value"),
+      digits = 3,
+      caption = "Average Marginal Effects for CHD Prediction Model")
+
+# 1.5 Visualize odds ratios to better understand coefficients
+or_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Odds_Ratio)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.2) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(title = "Odds Ratios with 95% Confidence Intervals",
+       x = "Variable", 
+       y = "Odds Ratio (log scale)") +
+  scale_y_log10() +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 10),
+        plot.title = element_text(size = 14, face = "bold"))
+
+print(or_plot)
+
+# 1.6 Calculate predicted probabilities for different values of key predictors
+# Create profiles for visualization
+age_profile <- data.frame(
+  age = seq(min(chd_data$age), max(chd_data$age), length.out = 100),
+  tobacco = mean(chd_data$tobacco),
+  ldl = mean(chd_data$ldl),
+  sbp = mean(chd_data$sbp),
+  famhist = factor("Absent", levels = levels(chd_data$famhist)),
+  obesity = mean(chd_data$obesity)
+)
+
+age_profile$predicted_prob <- predict(final_model, newdata = age_profile, type = "response")
+
+# Plot predicted probabilities vs. age
+age_prob_plot <- ggplot(age_profile, aes(x = age, y = predicted_prob)) +
+  geom_line(size = 1.2, color = "steelblue") +
+  labs(title = "Predicted Probability of CHD by Age",
+       x = "Age", y = "Probability of CHD") +
+  theme_minimal()
+
+print(age_prob_plot)
+
+# Do the same for tobacco use
+tobacco_profile <- data.frame(
+  age = mean(chd_data$age),
+  tobacco = seq(min(chd_data$tobacco), max(chd_data$tobacco), length.out = 100),
+  ldl = mean(chd_data$ldl),
+  sbp = mean(chd_data$sbp),
+  famhist = factor("Absent", levels = levels(chd_data$famhist)),
+  obesity = mean(chd_data$obesity)
+)
+
+tobacco_profile$predicted_prob <- predict(final_model, newdata = tobacco_profile, type = "response")
+
+# Plot predicted probabilities vs. tobacco use
+tobacco_prob_plot <- ggplot(tobacco_profile, aes(x = tobacco, y = predicted_prob)) +
+  geom_line(size = 1.2, color = "darkred") +
+  labs(title = "Predicted Probability of CHD by Tobacco Use",
+       x = "Cigarettes per Day", y = "Probability of CHD") +
+  theme_minimal()
+
+print(tobacco_prob_plot)
+```
+
+Part 2: Identifying Important Predictors (15 points)
+
+```{r}
+# 2.1 Calculate variable importance using different methods
+# Method 1: Using z-values from model summary
+z_values <- abs(coef_table$statistic)
+names(z_values) <- coef_table$term
+z_values <- sort(z_values[-1], decreasing = TRUE)  # Remove intercept
+
+# Method 2: Using AIC-based variable importance
+var_importance <- lapply(names(final_model$coefficients)[-1], function(var) {
+  # Create a formula without this variable
+  reduced_formula <- as.formula(
+    paste("chd ~", paste(setdiff(names(final_model$coefficients)[-1], var), collapse = " + "))
+  )
+  
+  # Fit reduced model
+  reduced_model <- glm(reduced_formula, data = chd_data, family = binomial)
+  
+  # Calculate AIC difference
+  aic_diff <- AIC(reduced_model) - AIC(final_model)
+  
+  return(data.frame(Variable = var, AIC_Difference = aic_diff))
+})
+
+var_importance_df <- do.call(rbind, var_importance)
+var_importance_df <- var_importance_df[order(-var_importance_df$AIC_Difference),]
+
+# Print variable importance based on AIC
+print(var_importance_df)
+
+# 2.2 Variance Inflation Factors to check for multicollinearity
+library(car)
+vif_values <- vif(final_model)
+print(vif_values)
+
+# 2.3 Create a plot comparing different importance metrics
+importance_comparison <- data.frame(
+  Variable = names(z_values),
+  Z_Value = z_values,
+  AIC_Diff = var_importance_df$AIC_Difference[match(names(z_values), var_importance_df$Variable)]
+)
+
+# Normalize values for comparison
+importance_comparison$Z_Value_Norm <- importance_comparison$Z_Value / max(importance_comparison$Z_Value)
+importance_comparison$AIC_Diff_Norm <- importance_comparison$AIC_Diff / max(importance_comparison$AIC_Diff)
+
+# Reshape for plotting
+library(tidyr)
+importance_long <- pivot_longer(
+  importance_comparison, 
+  cols = c(Z_Value_Norm, AIC_Diff_Norm),
+  names_to = "Metric",
+  values_to = "Value"
+)
+
+# Plot comparison of variable importance metrics
+importance_plot <- ggplot(importance_long, 
+                         aes(x = reorder(Variable, Value), y = Value, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Variable Importance Using Different Metrics",
+       x = "Variable",
+       y = "Normalized Importance") +
+  scale_fill_manual(values = c("steelblue", "darkred"),
+                   labels = c("AIC Difference", "Z-Value")) +
+  theme_minimal()
+
+print(importance_plot)
+
+# 2.4 Predictive power - partial dependence plots for top predictors
+# Requires tighter integration with specific ML packages, but here's a simple approach
+library(pdp)
+
+# Function to create a simple partial dependence plot
+simple_pdp <- function(model, data, var) {
+  # Create sequence of values for the variable
+  x_values <- seq(min(data[[var]]), max(data[[var]]), length.out = 50)
+  
+  # Create prediction profiles
+  profiles <- lapply(x_values, function(x) {
+    new_data <- data
+    new_data[[var]] <- x
+    mean_pred <- mean(predict(model, newdata = new_data, type = "response"))
+    return(data.frame(x = x, y = mean_pred))
+  })
+  
+  # Combine results
+  pdp_data <- do.call(rbind, profiles)
+  names(pdp_data) <- c(var, "predicted_prob")
+  
+  # Create plot
+  plot <- ggplot(pdp_data, aes_string(x = var, y = "predicted_prob")) +
+    geom_line(size = 1.2, color = "darkblue") +
+    labs(
+      title = paste("Partial Dependence Plot for", var),
+      x = var,
+      y = "Average Predicted Probability of CHD"
+    ) +
+    theme_minimal()
+  
+  return(plot)
+}
+
+# Get top 3 important variables based on AIC difference
+top_vars <- as.character(var_importance_df$Variable[1:3])
+pdp_plots <- lapply(top_vars, function(var) {
+  if (var != "famhist") {  # Skip categorical variables for this approach
+    simple_pdp(final_model, chd_data, var)
+  }
+})
+
+# Display the plots (removing NULL elements for categorical variables)
+pdp_plots <- pdp_plots[!sapply(pdp_plots, is.null)]
+if (length(pdp_plots) > 0) {
+  grid.arrange(grobs = pdp_plots, ncol = 2)
+}
+
+# 2.5 Create illustration of most important variables' effects
+# Focus on top two continuous predictors
+top_continuous_vars <- setdiff(top_vars, "famhist")[1:2]
+
+# Create profiles varying the top two predictors while holding others at mean/reference
+grid_size <- 30
+var1_seq <- seq(min(chd_data[[top_continuous_vars[1]]]), 
+                max(chd_data[[top_continuous_vars[1]]]), 
+                length.out = grid_size)
+var2_seq <- seq(min(chd_data[[top_continuous_vars[2]]]), 
+                max(chd_data[[top_continuous_vars[2]]]), 
+                length.out = grid_size)
+
+# Create prediction grid
+pred_grid <- expand.grid(
+  var1 = var1_seq,
+  var2 = var2_seq
+)
+names(pred_grid) <- top_continuous_vars
+
+# Create full prediction dataset
+pred_data <- data.frame(
+  pred_grid,
+  age = mean(chd_data$age),
+  tobacco = mean(chd_data$tobacco),
+  ldl = mean(chd_data$ldl),
+  sbp = mean(chd_data$sbp),
+  famhist = factor("Absent", levels = levels(chd_data$famhist)),
+  obesity = mean(chd_data$obesity)
+)
+
+# Only keep the columns needed for prediction
+pred_data <- pred_data[, names(coef(final_model)[-1])]
+
+# Add intercept (implicitly)
+pred_data$predicted_prob <- predict(final_model, newdata = pred_data, type = "response")
+
+# Reshape for contour plot
+pred_matrix <- matrix(pred_data$predicted_prob, nrow = grid_size, ncol = grid_size)
+
+# Create contour plot of probability surface
+contour_data <- expand.grid(
+  x = var1_seq,
+  y = var2_seq
+)
+contour_data$z <- as.vector(pred_matrix)
+names(contour_data) <- c("x", "y", "prob")
+names(contour_data)[1:2] <- top_continuous_vars
+
+contour_plot <- ggplot(contour_data, aes_string(x = top_continuous_vars[1], 
+                                               y = top_continuous_vars[2],
+                                               z = "prob")) +
+  geom_contour_filled(bins = 10) +
+  scale_fill_viridis_d() +
+  labs(
+    title = paste("Contour Plot of CHD Probability by", 
+                top_continuous_vars[1], "and", top_continuous_vars[2]),
+    x = top_continuous_vars[1],
+    y = top_continuous_vars[2],
+    fill = "Probability"
+  ) +
+  theme_minimal()
+
+print(contour_plot)
+```
