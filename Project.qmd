@@ -20,7 +20,10 @@ chd_data <- read.csv("chd.csv")
 # 1.1 Look at the data structure and summary
 str(chd_data)
 summary(chd_data)
+```
 
+
+```{r}
 # 1.2 Check for missing values
 sum(is.na(chd_data))
 
