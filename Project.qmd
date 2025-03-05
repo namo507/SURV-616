@@ -30,7 +30,10 @@ sum(is.na(chd_data))
 # 1.3 Convert famhist to factor
 chd_data$famhist <- as.factor(chd_data$famhist)
 chd_data$chd <- as.factor(chd_data$chd)
+```
 
+
+```{r}
 # 1.4 Univariate analysis: create histograms for continuous variables
 # Create a function to plot histograms
 hist_plot <- function(var, data) {
@@ -46,7 +49,10 @@ hist_plots <- lapply(cont_vars, hist_plot, data = chd_data)
 
 # Display the histograms in a grid layout
 grid.arrange(grobs = hist_plots, ncol = 3)
+```
 
+
+```{r}
 # 1.5 Bivariate analysis: Boxplots of predictors by CHD status
 # Create a function to generate boxplots
 box_plot <- function(var, data) {
