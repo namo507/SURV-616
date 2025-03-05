@@ -223,6 +223,9 @@ model3 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea +
 AIC(model1, model2, model3)
 ```
 
+
+
+
 Part 3: Model Fit Assessment (10 points)
 
 ```{r}
@@ -238,7 +241,11 @@ models_comparison <- data.frame(
   Deviance = c(deviance(model1), deviance(model2), deviance(model3))
 )
 print(models_comparison)
+```
 
+
+
+```{r}
 # 3.3 Assess model fit with residual analysis
 # Select final model (assume model3 is best for this example)
 final_model <- model3
@@ -252,7 +259,11 @@ pearson_plot <- ggplot(chd_data, aes(x = fitted(final_model), y = pearson_resid)
        x = "Fitted Values", y = "Pearson Residuals") +
   theme_minimal()
 print(pearson_plot)
+```
 
+
+
+```{r}
 # 3.4 Create binned residual plot (more appropriate for logistic regression)
 library(arm)
 binned_resid_plot <- binnedplot(fitted(final_model), 
@@ -260,7 +271,11 @@ binned_resid_plot <- binnedplot(fitted(final_model),
                                xlab = "Predicted Probability",
                                ylab = "Average Residual",
                                main = "Binned Residual Plot")
+```
 
+
+
+```{r}
 # 3.5 Hosmer-Lemeshow Goodness of Fit Test
 library(ResourceSelection)
 hoslem.test(chd_data$chd == "1", fitted(final_model), g = 10)
@@ -279,7 +294,9 @@ auc_value <- auc(roc_curve)
 
 # Plot ROC curve
 roc_plot <- plot(roc_curve, main = paste("ROC Curve (AUC =", round(auc_value, 3), ")"))
+```
 
+```{r}
 # 4.3 Find optimal threshold using Youden's J statistic
 optimal_threshold <- coords(roc_curve, "best", ret = "threshold")
 
@@ -287,7 +304,12 @@ optimal_threshold <- coords(roc_curve, "best", ret = "threshold")
 chd_data$predicted_class <- ifelse(chd_data$pred_prob >= optimal_threshold, "1", "0")
 conf_matrix <- table(Predicted = chd_data$predicted_class, Actual = chd_data$chd)
 print(conf_matrix)
+```
 
+Changes required in the code
+
+
+```{r}
 # Calculate metrics from confusion matrix
 sensitivity <- conf_matrix[2,2] / sum(conf_matrix[,2])
 specificity <- conf_matrix[1,1] / sum(conf_matrix[,1])
