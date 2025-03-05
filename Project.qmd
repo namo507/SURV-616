@@ -67,7 +67,9 @@ box_plots <- lapply(cont_vars, box_plot, data = chd_data)
 
 # Display the boxplots
 grid.arrange(grobs = box_plots, ncol = 3)
+```
 
+```{r}
 # 1.6 Create empirical logit plots for continuous predictors
 # Function to create empirical logit plots
 empirical_logit_plot <- function(var, data, bins = 10) {
@@ -101,7 +103,9 @@ emp_logit_plots <- lapply(cont_vars, empirical_logit_plot, data = chd_data)
 # Display the empirical logit plots
 grid.arrange(grobs = emp_logit_plots[1:4], ncol = 2)
 grid.arrange(grobs = emp_logit_plots[5:8], ncol = 2)
+```
 
+```{r}
 # 1.7 Correlation matrix of predictors
 corr_matrix <- cor(chd_data[,cont_vars])
 corrplot(corr_matrix, method = "circle", type = "upper", 
