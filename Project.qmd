@@ -136,7 +136,11 @@ uni_models <- lapply(c(cont_vars, "famhist"), function(var) {
 uni_results <- do.call(rbind.data.frame, uni_models)
 uni_results <- uni_results[order(uni_results$AIC),]
 print(uni_results)
+```
 
+
+
+```{r}
 # 2.2 Check for potential transformations using Box-Tidwell
 # First, fit a model with all continuous variables
 full_model <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
@@ -159,9 +163,13 @@ check_nonlinearity <- function(var, data) {
 nonlinearity_check <- lapply(cont_vars, check_nonlinearity, data = chd_data)
 nonlinearity_results <- do.call(rbind.data.frame, nonlinearity_check)
 print(nonlinearity_results)
+```
 
+
+
+```{r}
 # 2.3 Apply transformations based on nonlinearity check
-# Example for age (if needed):
+# Example of age:
 chd_data$age_squared <- chd_data$age^2
 
 # 2.4 Check for potential interactions (focus on meaningful interactions)
@@ -190,7 +198,11 @@ test_interaction <- function(vars, data) {
 interaction_results <- lapply(interactions_to_check, test_interaction, data = chd_data)
 interaction_results <- do.call(rbind.data.frame, interaction_results)
 print(interaction_results)
+```
 
+Changes needed above
+
+```{r}
 # 2.5 Build candidate models based on findings
 # Base model with all original predictors
 model1 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
