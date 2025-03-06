@@ -180,27 +180,51 @@ interactions_to_check <- list(
   c("tobacco", "famhist")
 )
 
-# Function to test interactions
+# Function to test interactions with error handling
 test_interaction <- function(vars, data) {
+  # Build the formula
   formula <- as.formula(paste("chd ~", vars[1], "*", vars[2]))
-  model <- glm(formula, data = data, family = binomial)
   
-  # Check if interaction is significant
-  interaction_term <- paste(vars[1], ":", vars[2])
-  p_value <- summary(model)$coefficients[interaction_term,4]
+  # Fit model
+  model <- tryCatch({
+    glm(formula, data = data, family = binomial)
+  }, error = function(e) {
+    return(NULL)
+  })
+  
+  # If model failed, return NA values
+  if(is.null(model)) {
+    return(list(interaction = paste(vars[1], "x", vars[2]), 
+                p_value = NA, 
+                significant = NA))
+  }
+  
+  # Extract model coefficients
+  coefs <- summary(model)$coefficients
+  
+  # Create the actual interaction term name that R uses
+  interaction_term <- paste0(vars[1], ":", vars[2])
+  
+  # Check if interaction term exists in model output
+  if(interaction_term %in% rownames(coefs)) {
+    p_value <- coefs[interaction_term, 4]
+    significant <- p_value < 0.05
+  } else {
+    p_value <- NA
+    significant <- NA
+  }
   
   return(list(interaction = paste(vars[1], "x", vars[2]), 
               p_value = p_value, 
-              significant = p_value < 0.05))
+              significant = significant))
 }
 
-# Apply function to check interactions
+# Apply function to check interactions with error handling
 interaction_results <- lapply(interactions_to_check, test_interaction, data = chd_data)
 interaction_results <- do.call(rbind.data.frame, interaction_results)
 print(interaction_results)
 ```
 
-Changes needed above
 
 ```{r}
 # 2.5 Build candidate models based on findings
