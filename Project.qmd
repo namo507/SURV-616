@@ -363,7 +363,7 @@ print(metrics)
 library(caret)
 # Set up 10-fold cross-validation
 set.seed(123)
-folds <- CreatingFolds(chd_data$chd, k = 10)
+folds <- createFolds(chd_data$chd, k = 10)
 
 # Function to perform cross-validation
 cv_results <- lapply(folds, function(test_indices) {
