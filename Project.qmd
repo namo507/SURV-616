@@ -227,7 +227,8 @@ print(interaction_results)
 
 
 ```{r}
-# 2.5 Build candidate models based on findings
+# 2.5 Building candidate models based on findings
+
 # Base model with all original predictors
 model1 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
                 obesity + alcohol + age + famhist, 
@@ -243,7 +244,7 @@ model3 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea +
                 obesity + alcohol + age + famhist + tobacco:age, 
              data = chd_data, family = binomial)
 
-# Compare models using AIC
+# Comparing models using AIC
 AIC(model1, model2, model3)
 ```
 
@@ -253,11 +254,11 @@ AIC(model1, model2, model3)
 Part 3: Model Fit Assessment (10 points)
 
 ```{r}
-# 3.1 Assess model fit using likelihood ratio tests
+# 3.1 Assessing model fit using likelihood ratio tests
 anova(model1, model2, test = "Chisq")
 anova(model1, model3, test = "Chisq")
 
-# 3.2 Compare AIC and BIC
+# 3.2 Comparing AIC and BIC
 models_comparison <- data.frame(
   Model = c("Base Model", "With Transformed Variables", "With Interactions"),
   AIC = c(AIC(model1), AIC(model2), AIC(model3)),
@@ -270,11 +271,11 @@ print(models_comparison)
 
 
 ```{r}
-# 3.3 Assess model fit with residual analysis
-# Select final model (assume model3 is best for this example)
+# 3.3 Assessing model fit with residual analysis
+# Selecting final model (assume model3 is best for this example)
 final_model <- model3
 
-# Calculating and plot Pearson residuals
+# Calculating and plotting Pearson residuals
 chd_data$pearson_resid <- residuals(final_model, type = "pearson")
 pearson_plot <- ggplot(chd_data, aes(x = fitted(final_model), y = pearson_resid)) +
   geom_point() +
@@ -321,16 +322,22 @@ roc_plot <- plot(roc_curve, main = paste("ROC Curve (AUC =", round(auc_value, 3)
 ```
 
 ```{r}
-# 4.3 Find optimal threshold using Youden's J statistic
-optimal_threshold <- coords(roc_curve, "best", ret = "threshold")
+# 4.3 Finding optimal threshold using Youden's J statistic
+# Extracting the actual threshold value
+optimal_threshold_obj <- coords(roc_curve, "best")
+# Checking the structure of what we get back
+print(optimal_threshold_obj)
+# Extracting just the threshold value
+optimal_threshold <- as.numeric(optimal_threshold_obj["threshold"])
+print(paste("Optimal threshold:", optimal_threshold))
 
 # 4.4 Creating confusion matrix with the optimal threshold
 chd_data$predicted_class <- ifelse(chd_data$pred_prob >= optimal_threshold, "1", "0")
+chd_data$predicted_class <- factor(chd_data$predicted_class, levels = levels(chd_data$chd))
 conf_matrix <- table(Predicted = chd_data$predicted_class, Actual = chd_data$chd)
 print(conf_matrix)
 ```
 
-Changes required in the code
 
 
 ```{r}
@@ -347,7 +354,11 @@ metrics <- data.frame(
   Value = c(sensitivity, specificity, accuracy, precision, f1_score)
 )
 print(metrics)
+```
 
+
+
+```{r}
 # 4.5 K-fold cross-validation to assess predictive accuracy
 library(caret)
 # Set up 10-fold cross-validation
