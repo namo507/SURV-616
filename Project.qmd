@@ -594,7 +594,8 @@ final_model <- glm(chd ~ age + tobacco + ldl + sbp + famhist + obesity,
 model_summary <- summary(final_model)
 coef_table <- tidy(final_model)
 print(coef_table)
-
+```
+```{r}
 # 1.2 Calculating and interpret odds ratios with confidence intervals
 odds_ratios <- exp(coef(final_model))
 conf_int <- exp(confint(final_model))
@@ -770,7 +771,10 @@ print(var_importance_df)
 library(car)
 vif_values <- vif(final_model)
 print(vif_values)
+```
 
+
+```{r}
 # 2.3 Creating a plot comparing different importance metrics
 importance_comparison <- data.frame(
   Variable = names(z_values),
