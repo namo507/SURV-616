@@ -380,13 +380,22 @@ cv_results <- lapply(folds, function(test_indices) {
   test_data$pred_prob <- predict(train_model, newdata = test_data, type = "response")
   test_data$pred_class <- ifelse(test_data$pred_prob >= optimal_threshold, "1", "0")
   
-  # Calculating metrics
+  # Calculate metrics
   conf_mat <- table(Predicted = test_data$pred_class, Actual = test_data$chd)
-  acc <- sum(diag(conf_mat)) / sum(conf_mat)
-  sens <- conf_mat[2,2] / sum(conf_mat[,2])
-  spec <- conf_mat[1,1] / sum(conf_mat[,1])
   
-  # Calculating AUC
+  # Handle potential issues with confusion matrix dimensions
+  if(nrow(conf_mat) == 1 || ncol(conf_mat) == 1) {
+    # If only one class is predicted or present in the fold
+    acc <- sum(test_data$pred_class == test_data$chd) / nrow(test_data)
+    sens <- NA
+    spec <- NA
+  } else {
+    acc <- sum(diag(conf_mat)) / sum(conf_mat)
+    sens <- ifelse(sum(conf_mat[,2]) > 0, conf_mat[2,2] / sum(conf_mat[,2]), NA)
+    spec <- ifelse(sum(conf_mat[,1]) > 0, conf_mat[1,1] / sum(conf_mat[,1]), NA)
+  }
+  
+  # Calculate AUC
   if(length(unique(test_data$chd)) > 1) {
     roc_obj <- roc(test_data$chd, test_data$pred_prob)
     auc_val <- auc(roc_obj)
@@ -396,7 +405,8 @@ cv_results <- lapply(folds, function(test_indices) {
   
   return(c(Accuracy = acc, Sensitivity = sens, Specificity = spec, AUC = auc_val))
 })
-
+```
+```{r}
 # Combine cross-validation results
 cv_metrics <- do.call(rbind, cv_results)
 cv_summary <- colMeans(cv_metrics, na.rm = TRUE)
@@ -408,22 +418,136 @@ cv_results_df <- data.frame(
   Std_Dev = cv_sd
 )
 print(cv_results_df)
-
-# 4.6 Learning curve to check if more data would improve model
-# (Implementation depends on computational resources and data size)
 ```
+
+```{r}
+# 4.6 Learning curve to check if more data would improve model
+library(caret)
+library(ggplot2)
+
+# First fix the factor levels for CHD
+chd_data$chd <- factor(chd_data$chd, 
+                       levels = c("0", "1"), 
+                       labels = c("No_CHD", "Yes_CHD"))
+
+# Function to calculate model performance with varying training set sizes
+calculate_learning_curve <- function(data, formula, sizes = NULL, folds = 5, repeats = 3) {
+  # If sizes not specified, create a sequence
+  if (is.null(sizes)) {
+    # Create a sequence of proportions from 0.1 to 1.0
+    size_proportions <- seq(0.1, 1.0, by = 0.1)
+    sizes <- floor(nrow(data) * size_proportions)
+  }
+  
+  # Ensure we don't have sizes larger than the data
+  sizes <- sizes[sizes <= nrow(data)]
+  
+  # Create repeated k-fold cross-validation
+  set.seed(123)
+  cv_control <- trainControl(
+    method = "repeatedcv",
+    number = folds,
+    repeats = repeats,
+    classProbs = TRUE,
+    summaryFunction = twoClassSummary
+  )
+  
+  # Vector to store results
+  results <- vector("list", length(sizes))
+  
+  # Train model on each subset size
+  for(i in seq_along(sizes)) {
+    size <- sizes[i]
+    # Create training indices
+    train_indices <- createDataPartition(data$chd, p = size/nrow(data), list = FALSE)
+    train_data <- data[train_indices, ]
+    
+    # Train model
+    tryCatch({
+      model <- train(
+        formula,
+        data = train_data,
+        method = "glm",
+        family = binomial,
+        trControl = cv_control,
+        metric = "ROC"
+      )
+      
+      # Extract performance metrics
+      perf <- model$results
+      
+      results[[i]] <- data.frame(
+        Size = size,
+        AUC = perf$ROC,
+        Sens = perf$Sens,
+        Spec = perf$Spec
+      )
+    }, error = function(e) {
+      message("Error at size ", size, ": ", e$message)
+      results[[i]] <- data.frame(
+        Size = size,
+        AUC = NA,
+        Sens = NA,
+        Spec = NA
+      )
+    })
+  }
+  
+  # Combine results
+  results_df <- do.call(rbind, results)
+  
+  return(results_df)
+}
+```
+
+
+```{r}
+# Defining formula based on the final model
+formula <- chd ~ sbp + tobacco + ldl + adiposity + typea + 
+  obesity + alcohol + age + famhist + tobacco:age
+
+# Creating learning curve data
+learning_curve_data <- calculate_learning_curve(
+  data = chd_data,
+  formula = formula
+)
+```
+
+```{r}
+# Plotting learning curve
+ggplot(learning_curve_data, aes(x = Size)) +
+  geom_line(aes(y = AUC, color = "AUC"), size = 1) +
+  geom_point(aes(y = AUC, color = "AUC"), size = 3) +
+  geom_line(aes(y = Sens, color = "Sensitivity"), size = 1) +
+  geom_point(aes(y = Sens, color = "Sensitivity"), size = 3) +
+  geom_line(aes(y = Spec, color = "Specificity"), size = 1) +
+  geom_point(aes(y = Spec, color = "Specificity"), size = 3) +
+  labs(
+    title = "Learning Curve: Performance vs. Training Set Size",
+    x = "Training Set Size",
+    y = "Performance",
+    color = "Metric"
+  ) +
+  scale_color_manual(values = c("AUC" = "blue", "Sensitivity" = "red", "Specificity" = "green")) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+```
+
 
 Explanation and Interpretation of Final Model
 
 ```{r}
-# Get summary of final model
+# Getting summary of final model
 summary(final_model)
 
 # Calculating odds ratios and confidence intervals
 odds_ratios <- exp(coef(final_model))
 conf_intervals <- exp(confint(final_model))
 
-# Combine results
+# Combining results
 or_table <- data.frame(
   Variable = names(odds_ratios),
   Odds_Ratio = odds_ratios,
@@ -431,8 +555,10 @@ or_table <- data.frame(
   CI_Upper = conf_intervals[,2]
 )
 print(or_table)
+```
 
-# Visualize important coefficients
+```{r}
+# Visualizing important coefficients
 coef_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Odds_Ratio)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.2) +
