@@ -782,11 +782,11 @@ importance_comparison <- data.frame(
   AIC_Diff = var_importance_df$AIC_Difference[match(names(z_values), var_importance_df$Variable)]
 )
 
-# Normalize values for comparison
+# Normalizing values for comparison
 importance_comparison$Z_Value_Norm <- importance_comparison$Z_Value / max(importance_comparison$Z_Value)
 importance_comparison$AIC_Diff_Norm <- importance_comparison$AIC_Diff / max(importance_comparison$AIC_Diff)
 
-# Reshape for plotting
+# Reshaping for plotting
 library(tidyr)
 importance_long <- pivot_longer(
   importance_comparison, 
@@ -795,7 +795,7 @@ importance_long <- pivot_longer(
   values_to = "Value"
 )
 
-# Plot comparison of variable importance metrics
+# Plotting comparison of variable importance metrics
 importance_plot <- ggplot(importance_long, 
                          aes(x = reorder(Variable, Value), y = Value, fill = Metric)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -808,9 +808,11 @@ importance_plot <- ggplot(importance_long,
   theme_minimal()
 
 print(importance_plot)
+```
 
+
+```{r}
 # 2.4 Predictive power - partial dependence plots for top predictors
-# Requires tighter integration with specific ML packages, but here's a simple approach
 library(pdp)
 
 # Function to Creating a simple partial dependence plot
@@ -842,7 +844,8 @@ simple_pdp <- function(model, data, var) {
   
   return(plot)
 }
-
+```
+```{r}
 # Get top 3 important variables based on AIC difference
 top_vars <- as.character(var_importance_df$Variable[1:3])
 pdp_plots <- lapply(top_vars, function(var) {
@@ -852,11 +855,14 @@ pdp_plots <- lapply(top_vars, function(var) {
 })
 
 # Display the plots (removing NULL elements for categorical variables)
+library(gridExtra)
 pdp_plots <- pdp_plots[!sapply(pdp_plots, is.null)]
 if (length(pdp_plots) > 0) {
   grid.arrange(grobs = pdp_plots, ncol = 2)
 }
+```
 
+```{r}
 # 2.5 Creating illustration of most important variables' effects
 # Focus on top two continuous predictors
 top_continuous_vars <- setdiff(top_vars, "famhist")[1:2]
@@ -887,21 +893,21 @@ pred_data <- data.frame(
   famhist = factor("Absent", levels = levels(chd_data$famhist)),
   obesity = mean(chd_data$obesity)
 )
+```
 
-# Only keep the columns needed for prediction
-pred_data <- pred_data[, names(coef(final_model)[-1])]
-
-# Add intercept (implicitly)
-pred_data$predicted_prob <- predict(final_model, newdata = pred_data, type = "response")
-
-# Reshape for contour plot
-pred_matrix <- matrix(pred_data$predicted_prob, nrow = grid_size, ncol = grid_size)
+```{r}
+pred_data <- pred_data[rep(1, nrow(pred_grid)), ]
+pred_data[[top_continuous_vars[1]]] <- pred_grid[[top_continuous_vars[1]]]
+pred_data[[top_continuous_vars[2]]] <- pred_grid[[top_continuous_vars[2]]]
 
 # Creating contour plot of probability surface
 contour_data <- expand.grid(
   x = var1_seq,
   y = var2_seq
 )
+```
+
+```{r}
 contour_data$z <- as.vector(pred_matrix)
 names(contour_data) <- c("x", "y", "prob")
 names(contour_data)[1:2] <- top_continuous_vars
