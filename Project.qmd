@@ -896,11 +896,20 @@ pred_data <- data.frame(
 ```
 
 ```{r}
+# Replicate the row for all combinations
 pred_data <- pred_data[rep(1, nrow(pred_grid)), ]
+
+# Add the grid values for the two variables we're varying
 pred_data[[top_continuous_vars[1]]] <- pred_grid[[top_continuous_vars[1]]]
 pred_data[[top_continuous_vars[2]]] <- pred_grid[[top_continuous_vars[2]]]
 
-# Creating contour plot of probability surface
+# Calculate predicted probabilities
+pred_data$predicted_prob <- predict(final_model, newdata = pred_data, type = "response")
+
+# Create the matrix for contour plotting
+pred_matrix <- matrix(pred_data$predicted_prob, nrow = grid_size, ncol = grid_size)
+
+# Creating contour plot data
 contour_data <- expand.grid(
   x = var1_seq,
   y = var2_seq
