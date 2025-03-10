@@ -12,7 +12,7 @@ library(plyr)
 #############
 
 #read the gps dataset.
-gps <- read.csv("E:/Teaching/Survmeth686/Winter 2025/07 Statistical Models/gps.csv")
+gps <- read.csv("/Users/namomac/Desktop/SURV-616/gps.csv")
 
 dim(gps)
 #define factors;
