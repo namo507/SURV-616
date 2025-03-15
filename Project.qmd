@@ -317,6 +317,12 @@ library(ResourceSelection)
 hoslem.test(chd_data$chd == "1", fitted(final_model), g = 10)
 ```
 
+The final model's fit to the data was assessed using several approaches. Likelihood ratio tests (LRT) comparing the base model to models with transformed variables and interactions showed no significant improvement in fit, as indicated by p-values of 0.3122 and 0.901, respectively. This suggests that neither adding a quadratic term for age nor including an interaction between tobacco and age provided meaningful enhancement to the model's predictive power. Additionally, the base model had the lowest AIC (448.7357) and BIC (489.1383) compared to the other models, further confirming it as the best-fitting model.
+
+To evaluate residuals, I examined both Pearson residuals and a binned residual plot. The binned residual plot revealed that the average residuals were close to zero across predicted probabilities, indicating no systematic bias in the model's predictions. The Hosmer-Lemeshow goodness-of-fit test also supported this conclusion, with a high p-value of 0.9322, suggesting that the model adequately fits the observed data.
+
+Overall, these assessments indicate that the final model provides a good fit to the data without requiring additional transformations or interactions. The residual analysis and goodness-of-fit tests further validate its reliability in predicting CHD status effectively.
+
 Part 4: Predictive Accuracy Assessment (15 points)
 
 ```{r}
