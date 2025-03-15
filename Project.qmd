@@ -120,6 +120,10 @@ prop.table(table_famhist, 1)
 chisq.test(table_famhist)
 ```
 
+Now, I began my preliminary analysis by examining the structure and summary statistics of the CHD dataset. I found that the dataset contains 420 observations and 10 variables, including both continuous predictors (such as sbp, tobacco, ldl, adiposity, typea, obesity, alcohol, and age) and categorical variables (famhist and chd). I checked for missing values and confirmed that there were none. After converting the variables famhist and chd into factors for appropriate analysis, I proceeded with univariate analysis by creating histograms to visualize the distribution of each continuous predictor. This helped me observe their shapes and identify any potential skewness or outliers.
+
+Next, I conducted bivariate analyses using boxplots to explore how each predictor varies according to CHD status. These plots provided initial insights into potential differences between groups. Additionally, I created empirical logit plots for each continuous predictor to visually assess their relationship with the likelihood of CHD. These empirical logit plots allowed me to detect potential linear or nonlinear relationships between predictors and CHD status. Finally, I generated a correlation matrix to check for multicollinearity among predictors and examined the relationship between family history (famhist) and CHD using a chi-square test. This comprehensive preliminary analysis provided me with a solid foundation to better understand the data structure, identify important variables, and guide further modeling efforts.
+
 
 Part 2: Predictor Selection and Transformations (10 points)
 
