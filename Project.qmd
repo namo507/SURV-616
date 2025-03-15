@@ -254,6 +254,11 @@ model3 <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea +
 AIC(model1, model2, model3)
 ```
 
+In the second part of my analysis, I began by performing univariate logistic regression models to assess the individual importance of each predictor. Variables such as age, tobacco usage, family history (famhist), adiposity, and LDL cholesterol emerged as particularly significant predictors based on their low p-values and lower AIC scores. Next, I checked for potential nonlinear relationships using quadratic terms for each continuous predictor. This analysis revealed significant nonlinear effects for tobacco and LDL cholesterol, suggesting these variables might benefit from transformations to better capture their relationships with CHD.
+
+I then explored potential interactions between meaningful pairs of variables, such as age and tobacco use, systolic blood pressure (sbp) and obesity, LDL cholesterol and family history, and tobacco use with family history. However, none of these interactions turned out to be statistically significant in my analysis.
+
+Finally, I built candidate logistic regression models incorporating these findings: a base model with all original predictors; a model including the squared age term (as an example transformation); and a model testing the interaction between tobacco and age. Comparing these candidate models using AIC values, I found that the base model without additional transformations or interactions provided the best fit (lowest AIC). This comprehensive approach allowed me to carefully evaluate the necessity of transformations and interactions, ultimately guiding me toward selecting an effective final model for predicting CHD status.
 
 
 
