@@ -33,6 +33,8 @@ chd_data$chd <- as.factor(chd_data$chd)
 ```
 
 
+To be added in the report for the analysis. 
+
 ```{r}
 # 1.4 Univariate analysis: Creating histograms for continuous variables
 # Creating a function to plot histograms
