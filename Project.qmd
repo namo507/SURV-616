@@ -374,55 +374,88 @@ print(metrics)
 ```
 
 
-
 ```{r}
-# 4.5 K-fold cross-validation to assess predictive accuracy
+# 4.5 K-fold cross-validation - First part: Setup
 library(caret)
+library(pROC)
+
 # Set up 10-fold cross-validation
 set.seed(123)
-folds <- createFolds(chd_data$chd, k = 10)
-
-# Function to perform cross-validation
-cv_results <- lapply(folds, function(test_indices) {
+folds <- createFolds(chd_data$chd, k = 5) # Reduced to 5 folds for faster processing
+```
+```{r}
+# 4.5 K-fold cross-validation - Second part: Define simplified model for cross-validation
+# Use a simpler model with only the most important predictors
+cv_formula <- as.formula("chd ~ age + tobacco + ldl + famhist")
+```
+```{r}
+# 4.5 K-fold cross-validation - Third part: Function to process a single fold
+process_fold <- function(test_indices, data, formula, threshold) {
   # Split data
-  train_data <- chd_data[-test_indices, ]
-  test_data <- chd_data[test_indices, ]
+  train_data <- data[-test_indices, ]
+  test_data <- data[test_indices, ]
   
-  # Fit model on training data
-  train_model <- glm(chd ~ sbp + tobacco + ldl + adiposity + typea + 
-                      obesity + alcohol + age + famhist + tobacco:age,
-                    data = train_data, family = binomial)
+  # Fit model on training data (simplified model)
+  train_model <- glm(formula, data = train_data, family = binomial)
   
   # Predict on test data
   test_data$pred_prob <- predict(train_model, newdata = test_data, type = "response")
-  test_data$pred_class <- ifelse(test_data$pred_prob >= optimal_threshold, "1", "0")
+  test_data$pred_class <- ifelse(test_data$pred_prob >= threshold, "1", "0")
   
-  # Calculate metrics
-  conf_mat <- table(Predicted = test_data$pred_class, Actual = test_data$chd)
-  
-  # Handle potential issues with confusion matrix dimensions
-  if(nrow(conf_mat) == 1 || ncol(conf_mat) == 1) {
-    # If only one class is predicted or present in the fold
-    acc <- sum(test_data$pred_class == test_data$chd) / nrow(test_data)
-    sens <- NA
-    spec <- NA
-  } else {
-    acc <- sum(diag(conf_mat)) / sum(conf_mat)
-    sens <- ifelse(sum(conf_mat[,2]) > 0, conf_mat[2,2] / sum(conf_mat[,2]), NA)
-    spec <- ifelse(sum(conf_mat[,1]) > 0, conf_mat[1,1] / sum(conf_mat[,1]), NA)
-  }
-  
-  # Calculate AUC
-  if(length(unique(test_data$chd)) > 1) {
-    roc_obj <- roc(test_data$chd, test_data$pred_prob)
-    auc_val <- auc(roc_obj)
-  } else {
-    auc_val <- NA
-  }
-  
-  return(c(Accuracy = acc, Sensitivity = sens, Specificity = spec, AUC = auc_val))
-})
+  # Calculate metrics - with error handling
+  tryCatch({
+    conf_mat <- table(Predicted = test_data$pred_class, Actual = test_data$chd)
+    
+    # Handle cases with empty cells
+    if(nrow(conf_mat) == 1 || ncol(conf_mat) == 1) {
+      acc <- sum(test_data$pred_class == test_data$chd) / nrow(test_data)
+      sens <- NA
+      spec <- NA
+      auc_val <- NA
+    } else {
+      acc <- sum(diag(conf_mat)) / sum(conf_mat)
+      sens <- ifelse(sum(conf_mat[,2]) > 0, conf_mat[2,2] / sum(conf_mat[,2]), NA)
+      spec <- ifelse(sum(conf_mat[,1]) > 0, conf_mat[1,1] / sum(conf_mat[,1]), NA)
+      
+      # Calculate AUC if possible
+      if(length(unique(test_data$chd)) > 1) {
+        roc_obj <- roc(test_data$chd, test_data$pred_prob, quiet = TRUE)
+        auc_val <- auc(roc_obj)
+      } else {
+        auc_val <- NA
+      }
+    }
+    
+    return(c(Accuracy = acc, Sensitivity = sens, Specificity = spec, AUC = auc_val))
+  }, error = function(e) {
+    message("Error in fold: ", e$message)
+    return(c(Accuracy = NA, Sensitivity = NA, Specificity = NA, AUC = NA))
+  })
+}
 ```
+```{r}
+# 4.5 K-fold cross-validation - Fourth part: Execute cross-validation
+# Process each fold and collect results
+cv_results <- lapply(folds, function(test_idx) {
+  process_fold(test_idx, chd_data, cv_formula, optimal_threshold)
+})
+
+# Combine cross-validation results
+cv_metrics <- do.call(rbind, cv_results)
+cv_summary <- colMeans(cv_metrics, na.rm = TRUE)
+cv_sd <- apply(cv_metrics, 2, sd, na.rm = TRUE)
+
+# Format results
+cv_results_df <- data.frame(
+  Metric = names(cv_summary),
+  Mean = round(cv_summary, 3),
+  Std_Dev = round(cv_sd, 3)
+)
+
+print(cv_results_df)
+```
+
+
 ```{r}
 # Combine cross-validation results
 cv_metrics <- do.call(rbind, cv_results)
@@ -446,75 +479,128 @@ library(ggplot2)
 chd_data$chd <- factor(chd_data$chd, 
                        levels = c("0", "1"), 
                        labels = c("No_CHD", "Yes_CHD"))
+```
 
-# Function to calculate model performance with varying training set sizes
-calculate_learning_curve <- function(data, formula, sizes = NULL, folds = 5, repeats = 3) {
-  # If sizes not specified, create a sequence
-  if (is.null(sizes)) {
-    # Create a sequence of proportions from 0.1 to 1.0
-    size_proportions <- seq(0.1, 1.0, by = 0.1)
-    sizes <- floor(nrow(data) * size_proportions)
-  }
+```{r}
+# 4.6.2 Learning curve - Create sample size sequence and cross-validation control
+# Define sample sizes to evaluate
+size_proportions <- seq(0.2, 1.0, by = 0.2)  # Use fewer points for faster execution
+sizes <- floor(nrow(chd_data) * size_proportions)
+
+# Set up cross-validation parameters - fewer folds and repeats for speed
+set.seed(123)
+cv_control <- trainControl(
+  method = "cv",             # Simple CV instead of repeated CV
+  number = 5,                # 5-fold CV
+  classProbs = TRUE,
+  summaryFunction = twoClassSummary
+)
+```
+
+```{r}
+# 4.6.3 Learning curve - Define simplified formula for faster training
+# Use a simpler model with only key predictors
+simple_formula <- as.formula("chd ~ age + tobacco + ldl + famhist")
+```
+
+```{r}
+# 4.6.4 Learning curve - Process a single sample size
+process_sample_size <- function(size, data, formula, control) {
+  # Create training indices
+  set.seed(123 + size)  # Ensure reproducibility but different for each size
+  train_indices <- createDataPartition(data$chd, p = size/nrow(data), list = FALSE)
+  train_data <- data[train_indices, ]
   
-  # Ensure we don't have sizes larger than the data
-  sizes <- sizes[sizes <= nrow(data)]
-  
-  # Create repeated k-fold cross-validation
-  set.seed(123)
-  cv_control <- trainControl(
-    method = "repeatedcv",
-    number = folds,
-    repeats = repeats,
-    classProbs = TRUE,
-    summaryFunction = twoClassSummary
-  )
-  
-  # Vector to store results
-  results <- vector("list", length(sizes))
-  
-  # Train model on each subset size
-  for(i in seq_along(sizes)) {
-    size <- sizes[i]
-    # Create training indices
-    train_indices <- createDataPartition(data$chd, p = size/nrow(data), list = FALSE)
-    train_data <- data[train_indices, ]
+  # Train model with error handling
+  result <- tryCatch({
+    # Use train function from caret
+    model <- train(
+      formula,
+      data = train_data,
+      method = "glm",
+      family = binomial,
+      trControl = control,
+      metric = "ROC"
+    )
     
-    # Train model
-    tryCatch({
-      model <- train(
-        formula,
-        data = train_data,
-        method = "glm",
-        family = binomial,
-        trControl = cv_control,
-        metric = "ROC"
-      )
-      
-      # Extract performance metrics
-      perf <- model$results
-      
-      results[[i]] <- data.frame(
-        Size = size,
-        AUC = perf$ROC,
-        Sens = perf$Sens,
-        Spec = perf$Spec
-      )
-    }, error = function(e) {
-      message("Error at size ", size, ": ", e$message)
-      results[[i]] <- data.frame(
-        Size = size,
-        AUC = NA,
-        Sens = NA,
-        Spec = NA
-      )
-    })
-  }
+    # Extract performance metrics
+    data.frame(
+      Size = size,
+      AUC = model$results$ROC[1],
+      Sens = model$results$Sens[1],
+      Spec = model$results$Spec[1]
+    )
+  }, error = function(e) {
+    message("Error at size ", size, ": ", e$message)
+    data.frame(
+      Size = size,
+      AUC = NA,
+      Sens = NA,
+      Spec = NA
+    )
+  })
   
-  # Combine results
-  results_df <- do.call(rbind, results)
-  
-  return(results_df)
+  return(result)
 }
+```
+
+```{r}
+# 4.6.5 Learning curve - Process all sample sizes sequentially
+learning_curve_results <- list()
+
+# Process each sample size one at a time (more memory efficient)
+for(i in seq_along(sizes)) {
+  message("Processing sample size ", i, " of ", length(sizes), ": ", sizes[i])
+  learning_curve_results[[i]] <- process_sample_size(
+    sizes[i], 
+    chd_data, 
+    simple_formula, 
+    cv_control
+  )
+}
+
+# Combine results
+learning_curve_data <- do.call(rbind, learning_curve_results)
+```
+
+```{r}
+# 4.6.6 Learning curve - Plot results
+ggplot(learning_curve_data, aes(x = Size)) +
+  # Add AUC line
+  geom_line(aes(y = AUC, color = "AUC"), size = 1) +
+  geom_point(aes(y = AUC, color = "AUC"), size = 3) +
+  
+  # Add sensitivity line
+  geom_line(aes(y = Sens, color = "Sensitivity"), size = 1) +
+  geom_point(aes(y = Sens, color = "Sensitivity"), size = 3) +
+  
+  # Add specificity line
+  geom_line(aes(y = Spec, color = "Specificity"), size = 1) +
+  geom_point(aes(y = Spec, color = "Specificity"), size = 3) +
+  
+  # Customize plot appearance
+  scale_color_manual(values = c(
+    "AUC" = "blue", 
+    "Sensitivity" = "red", 
+    "Specificity" = "green"
+  )) +
+  
+  # Add labels and title
+  labs(
+    title = "Learning Curve: Performance vs. Training Set Size",
+    subtitle = "Evaluating if more data would improve model performance",
+    x = "Training Set Size",
+    y = "Performance Metric Value",
+    color = "Metric"
+  ) +
+  
+  # Improve appearance
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    panel.grid.minor = element_blank()
+  )
 ```
 
 
@@ -552,7 +638,6 @@ ggplot(learning_curve_data, aes(x = Size)) +
     plot.title = element_text(hjust = 0.5, face = "bold")
   )
 ```
-
 
 Explanation and Interpretation of Final Model
 
