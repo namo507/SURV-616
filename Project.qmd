@@ -688,6 +688,9 @@ To further validate the model, I performed 5-fold cross-validation using a simpl
 Overall, the assessments that I demonstrated shows that the model performs reasonably well in predicting CHD status, with strong sensitivity but room for improvement in specificity and precision.
 
 
+
+
+
 Explaining the Final Coronary Heart Disease Prediction Model
 
 Part 1: Understanding the Coefficients (15 points)
@@ -842,6 +845,19 @@ tobacco_prob_plot <- ggplot(tobacco_profile, aes(x = tobacco, y = predicted_prob
 
 print(tobacco_prob_plot)
 ```
+
+Ok so the coefficients in the logistic regression model represent the relationship between each predictor and the log odds of coronary heart disease (CHD). For example, the coefficient for age is 0.042, meaning that for every one-year increase in age, the log odds of CHD increase by 0.042. When converted to an odds ratio using $e^{\beta}$, this corresponds to an odds ratio of 1.043, indicating a 4.3\% increase in the odds of CHD per year of age. Similarly, tobacco has a coefficient of 0.086, translating to an odds ratio of 1.090, suggesting that each unit increase in tobacco consumption raises the odds of CHD by approximately 9\%.
+
+The variable LDL cholesterol has a coefficient of 0.184 and an odds ratio of 1.202, implying that higher LDL levels significantly increase the likelihood of CHD. Family history (famhist) is particularly impactful, with a coefficient of 0.948 and an odds ratio of 2.582, meaning individuals with a positive family history are over two and a half times more likely to develop CHD compared to those without.
+
+On the other hand, systolic blood pressure (sbp) and obesity have coefficients close to zero (0.007 and -0.034, respectively), indicating weaker or non-significant associations with CHD in this model. For instance, obesity's negative coefficient suggests a slight protective effect, but its p-value (0.258) shows that this relationship is not statistically significant.
+
+Now to compare relative importance across predictors, standardized coefficients were calculated by scaling continuous variables to have mean zero and standard deviation one. This analysis revealed that age ($\beta=0.616$) and tobacco ($\beta=0.402$) are among the most influential predictors when adjusted for scale.
+
+Finally, average marginal effects (AMEs) provided additional insights into how changes in predictors affect the probability of CHD directly. For example, age has an AME of 0.0073, meaning that each additional year increases the probability of CHD by approximately 0.73\%. Similarly, tobacco use increases CHD probability by about 1.48\% per unit increase.
+
+These interpretations highlight both the magnitude and significance of predictors in influencing CHD risk, with family history emerging as a particularly strong factor alongside age and LDL cholesterol levels.
+
 
 Part 2: Identifying Important Predictors (15 points)
 
