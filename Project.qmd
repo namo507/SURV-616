@@ -356,7 +356,6 @@ print(conf_matrix)
 ```
 
 
-
 ```{r}
 # Calculating metrics from confusion matrix
 sensitivity <- conf_matrix[2,2] / sum(conf_matrix[,2])
@@ -433,6 +432,7 @@ process_fold <- function(test_indices, data, formula, threshold) {
   })
 }
 ```
+
 ```{r}
 # 4.5 K-fold cross-validation - Fourth part: Execute cross-validation
 # Process each fold and collect results
@@ -470,6 +470,7 @@ cv_results_df <- data.frame(
 print(cv_results_df)
 ```
 
+
 ```{r}
 # 4.6 Learning curve to check if more data would improve model
 library(caret)
@@ -480,6 +481,7 @@ chd_data$chd <- factor(chd_data$chd,
                        levels = c("0", "1"), 
                        labels = c("No_CHD", "Yes_CHD"))
 ```
+
 
 ```{r}
 # 4.6.2 Learning curve - Create sample size sequence and cross-validation control
@@ -497,11 +499,13 @@ cv_control <- trainControl(
 )
 ```
 
+
 ```{r}
 # 4.6.3 Learning curve - Define simplified formula for faster training
 # Use a simpler model with only key predictors
 simple_formula <- as.formula("chd ~ age + tobacco + ldl + famhist")
 ```
+
 
 ```{r}
 # 4.6.4 Learning curve - Process a single sample size
@@ -544,6 +548,7 @@ process_sample_size <- function(size, data, formula, control) {
 }
 ```
 
+
 ```{r}
 # 4.6.5 Learning curve - Process all sample sizes sequentially
 learning_curve_results <- list()
@@ -562,6 +567,7 @@ for(i in seq_along(sizes)) {
 # Combine results
 learning_curve_data <- do.call(rbind, learning_curve_results)
 ```
+
 
 ```{r}
 # 4.6.6 Learning curve - Plot results
@@ -615,6 +621,7 @@ learning_curve_data <- calculate_learning_curve(
   formula = formula
 )
 ```
+
 
 ```{r}
 # Plotting learning curve
@@ -671,6 +678,14 @@ coef_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Od
   theme_minimal()
 print(coef_plot)
 ```
+
+To assess predictive accuracy, I calculated several metrics and used robust techniques to evaluate the model's performance. First, I computed the predicted probabilities for CHD using the final model and evaluated its discriminative ability with a Receiver Operating Characteristic (ROC) curve. The Area Under the Curve (AUC) was 0.776, indicating good overall predictive accuracy. To determine the optimal threshold for classification, I used Youden's J statistic, which identified 0.29 as the cutpoint that balances sensitivity and specificity.
+
+Using this threshold, I created a confusion matrix, which revealed an accuracy of 69%, sensitivity of 83%, and specificity of 61%. While the model effectively identifies CHD cases (high sensitivity), it is less proficient at correctly classifying non-CHD cases (lower specificity). Precision was calculated at 53%, and the F1 score which is a harmonic mean of precision and sensitivity was 0.65, reflecting moderate performance in balancing false positives and false negatives.
+
+To further validate the model, I performed 5-fold cross-validation using a simplified formula with key predictors (age, tobacco, LDL, and famhist). This yielded consistent results across folds, with an average AUC of 0.776, accuracy of 65%, sensitivity of 77%, and specificity of 59%. These metrics confirm that the model generalizes well to new data. Additionally, a learning curve analysis showed stable performance as training set size increased, suggesting that adding more data might not significantly improve accuracy.
+
+Overall, the assessments that I demonstrated shows that the model performs reasonably well in predicting CHD status, with strong sensitivity but room for improvement in specificity and precision.
 
 
 Explaining the Final Coronary Heart Disease Prediction Model
