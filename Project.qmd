@@ -823,6 +823,8 @@ age_prob_plot <- ggplot(age_profile, aes(x = age, y = predicted_prob)) +
 print(age_prob_plot)
 ```
 
+
+
 ```{r}
 # Doing the same for tobacco use
 tobacco_profile <- data.frame(
@@ -862,41 +864,86 @@ These interpretations highlight both the magnitude and significance of predictor
 Part 2: Identifying Important Predictors (15 points)
 
 ```{r}
-# 2.1 Calculating variable importance using different methods
-# Method 1: Using z-values from model summary
+# Extract z-values from coefficient table
 z_values <- abs(coef_table$statistic)
 names(z_values) <- coef_table$term
-z_values <- sort(z_values[-1], decreasing = TRUE)  # Remove intercept
 
+# Remove intercept and sort by importance
+z_values <- sort(z_values[-1], decreasing = TRUE)  
+print("Variable importance based on z-values:")
+print(z_values)
+```
+
+```{r}
+# 2.1.2 Second approach: Calculate variable importance using AIC differences
+# Extract model terms
 model_vars <- attr(terms(final_model), "term.labels")
-# Method 2: Using AIC-based variable importance
-var_importance <- lapply(model_vars, function(var) {
-  # Create formula excluding this variable
-  all_other_vars <- setdiff(model_vars, var)
-  if (length(all_other_vars) > 0) {
-    reduced_formula <- as.formula(
-      paste("chd ~", paste(all_other_vars, collapse = " + "))
-    )
-    
-    # Fit reduced model
-    reduced_model <- glm(reduced_formula, data = chd_data, family = binomial)
-    
-    # Calculate AIC difference
-    aic_diff <- AIC(reduced_model) - AIC(final_model)
+
+# Create function to compute AIC difference for a single variable
+compute_aic_diff <- function(var, full_model, data) {
+  # Get all other variables
+  all_vars <- attr(terms(full_model), "term.labels")
+  remaining_vars <- setdiff(all_vars, var)
+  
+  # Handle case with no remaining variables
+  if (length(remaining_vars) == 0) {
+    reduced_formula <- as.formula("chd ~ 1")
   } else {
-    # If removing the only variable, compare to null model
-    null_model <- glm(chd ~ 1, data = chd_data, family = binomial)
-    aic_diff <- AIC(null_model) - AIC(final_model)
+    reduced_formula <- as.formula(
+      paste("chd ~", paste(remaining_vars, collapse = " + "))
+    )
   }
   
+  # Fit reduced model
+  reduced_model <- glm(reduced_formula, data = data, family = binomial)
+  
+  # Calculate AIC difference
+  aic_diff <- AIC(reduced_model) - AIC(full_model)
+  
   return(data.frame(Variable = var, AIC_Difference = aic_diff))
-})
+}
+```
 
-var_importance_df <- do.call(rbind, var_importance)
-var_importance_df <- var_importance_df[order(-var_importance_df$AIC_Difference),]
+```{r}
+# 2.1.3 Apply function to each variable
+var_importance_list <- lapply(model_vars, compute_aic_diff, 
+                             full_model = final_model, 
+                             data = chd_data)
 
-# Print variable importance based on AIC
+# Combine results
+var_importance_df <- do.call(rbind, var_importance_list)
+
+# Sort by importance (higher AIC difference = more important)
+var_importance_df <- var_importance_df[order(-var_importance_df$AIC_Difference), ]
+
+print("Variable importance based on AIC differences:")
 print(var_importance_df)
+```
+```{r}
+# 2.1.4 Create a clean table comparing both importance metrics
+importance_table <- data.frame(
+  Variable = var_importance_df$Variable,
+  AIC_Difference = round(var_importance_df$AIC_Difference, 2),
+  stringsAsFactors = FALSE  # Prevent conversion to factors
+)
+
+# Add Z-values with NA handling
+importance_table$Z_Value <- NA  # Initialize with NA
+for(i in 1:nrow(importance_table)) {
+  var_name <- importance_table$Variable[i]
+  if(var_name %in% names(z_values)) {
+    importance_table$Z_Value[i] <- round(z_values[var_name], 2)
+  }
+}
+
+# Add rankings for each metric (with NA handling)
+importance_table$AIC_Rank <- rank(-importance_table$AIC_Difference)
+importance_table$Z_Rank <- rank(-importance_table$Z_Value, na.last = "keep")
+
+# Sort by AIC importance
+importance_table <- importance_table[order(importance_table$AIC_Rank), ]
+print("Comparison of variable importance metrics:")
+print(importance_table)
 ```
 
 ```{r}
