@@ -3,7 +3,7 @@ library(ggplot2)
 library(tidyverse)
 
 #Read the data, clean up variable names
-beer <- read.csv("D:\\Teaching\\Survmeth686\\Winter 2025\\09 Classification\\Beer.csv")
+beer <- read.csv("Beer.csv")
 
 #Review the data, subset to the 2 variables of interest, standardize these variables.
 head(beer,n=5)
