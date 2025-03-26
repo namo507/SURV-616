@@ -252,42 +252,108 @@ ggplot(data, aes(x=Group, y=Proportion)) +
 
 ## 3. b) \[15 points\] Please estimate the attributable risk for the population of having heart disease due to baldness. What is a 95% confidence interval around this estimate?
 
-First, let me define the variables: \* $n_{11} = 127$ (Bald with heart disease) \* $n_{12} = 1,224$ (Bald without heart disease) \* $n_{21} = 548$ (Not bald with heart disease) \* $n_{22} = 7,611$ (Not bald without heart disease)
+First let me define the variables
+$n_{11} = 127$ (Bald with heart disease)
+$n_{12} = 1,224$ (Bald without heart disease)
+$n_{21} = 548$ (Not bald with heart disease)
+$n_{22} = 7,611$ (Not bald without heart disease)
+$N = n_{11} + n_{12} + n_{21} + n_{22} = 9,510$ (Total sample size)
 
-1)  Calculating Risk Ratio ($\hat{R}$): $\hat{R} = \frac{n_{11}n_{22}}{n_{12}n_{21}} = \frac{127 \times 7,611}{1,224 \times 548} = 1.441$
+Step 1: Calculate the Risk Ratio (RR)
+In a prospective study, I calculated the risk ratio directly from incidence proportions as:
 
-2)  Then calculating Attributable Risk for Exposed: $\hat{A}_{Exposed} = \frac{\hat{R} - 1}{\hat{R}} = \frac{1.441 - 1}{1.441} = 0.306$ or 30.6%
+$RR = \frac{p_1}{p_0} = \frac{n_{11}/(n_{11}+n_{12})}{n_{21}/(n_{21}+n_{22})}$
 
-3)  Now to calculate Population Attributable Risk: $\hat{A}_{pop} = \frac{n_{11}n_{22} - n_{12}n_{21}}{(n_{11} + n_{21})(n_{21} + n_{22})}$ $= \frac{127 \times 7,611 - 1,224 \times 548}{(127 + 548)(548 + 7,611)} = 0.0537$ or 5.37%
+$RR = \frac{127/(127+1,224)}{548/(548+7,611)} = \frac{127/1,351}{548/8,159} = \frac{0.094}{0.067} = 1.400$
 
-4)  Calculating variance for confidence interval: $V(ln(1-\hat{A}_{pop})) = \frac{n_{12} + \hat{A}_{pop}(n_{11} + n_{22})}{N}$ where $N = n_{11} + n_{12} + n_{21} + n_{22}$
+Step 2: Then to calculate the Attributable Risk for Exposed
+$AR_{exposed} = \frac{RR - 1}{RR} = \frac{1.400 - 1}{1.400} = 0.286$ or 28.6%
 
-$V(ln(1-\hat{A}_{pop})) = \frac{1,224 + 0.0537(127 + 7,611)}{9,510} = 0.172$
+Step 3: Calculating the Population Attributable Risk (PAR) as
 
-5)  Calculate 95% CI: $CI = 1 - exp(ln(1-\hat{A}_{pop}) \pm 1.96\sqrt{V(ln(1-\hat{A}_{pop}))})$ $= (-1.135, 0.581)$
+$PAR = \frac{p_e(RR-1)}{p_e(RR-1)+1}$
+
+Where $p_e$ is the prevalence of exposure (baldness) in the population:
+
+$p_e = \frac{n_{11} + n_{12}}{N} = \frac{127 + 1,224}{9,510} = 0.142$
+
+$PAR = \frac{0.142 \times (1.400-1)}{0.142 \times (1.400-1) + 1} = \frac{0.142 \times 0.400}{0.142 \times 0.400 + 1} = \frac{0.0568}{1.0568} = 0.0537$ or 5.37%
+
+
+Step 4: Now to calculate the Variance for the Confidence Interval
+
+$Var[ln(1-PAR)] = \frac{1-PAR}{PAR} \times [\frac{1-p_1}{n_1 \times p_1} + \frac{1-p_0}{n_0 \times p_0}]$
+
+Where:
+
+$p_1 = n_{11}/(n_{11}+n_{12}) = 127/1,351 = 0.094$ (risk in exposed)
+$p_0 = n_{21}/(n_{21}+n_{22}) = 548/8,159 = 0.067$ (risk in unexposed)
+$n_1 = n_{11}+n_{12} = 1,351$ (total exposed)
+$n_0 = n_{21}+n_{22} = 8,159$ (total unexposed)
+$Var[ln(1-PAR)] = \frac{1-0.0537}{0.0537} \times [\frac{1-0.094}{1,351 \times 0.094} + \frac{1-0.067}{8,159 \times 0.067}]$
+
+$Var[ln(1-PAR)] = \frac{0.9463}{0.0537} \times [\frac{0.906}{127.0} + \frac{0.933}{546.7}]$
+
+$Var[ln(1-PAR)] = 17.621 \times [0.00713 + 0.00171] = 17.621 \times 0.00884 = 0.1556$
+
+Step 5: Calculate the 95% Confidence Interval
+$95% CI = 1 - exp[ln(1-PAR) \pm 1.96 \times \sqrt{Var[ln(1-PAR)]}]$
+
+$ln(1-PAR) = ln(1-0.0537) = ln(0.9463) = -0.0551$
+
+$95% CI = 1 - exp[-0.0551 \pm 1.96 \times \sqrt{0.1556}]$
+
+$95% CI = 1 - exp[-0.0551 \pm 1.96 \times 0.3944]$
+
+$95% CI = 1 - exp[-0.0551 \pm 0.7731]$
+
+$95% CI = 1 - exp[-0.8282, 0.7180]$
+
+$95% CI = 1 - [0.4369, 2.0503]$
+
+$95% CI = [0.5631, -1.0503]$ (The upper bound should be capped at 1)
+
+$95% CI = [0, 0.5631]$ (Ensuring logical bounds)
+
 
 ```{r}
 # Defining variables
-a <- 127
-b <- 1224
-c <- 548
-d <- 7611
+a <- 127    # Bald with heart disease
+b <- 1224   # Bald without heart disease 
+c <- 548    # Not bald with heart disease
+d <- 7611   # Not bald without heart disease
+N <- a + b + c + d
 
-# Calculating risk ratio
-r_hat <- (a*d)/(b*c)
+# Step 1: Calculating risk in exposed and unexposed
+p1 <- a/(a+b)      # Risk in bald
+p0 <- c/(c+d)      # Risk in not bald
 
-# Calculating attributable risks
-a_exposed <- (r_hat-1)/r_hat
-a_pop <- (a*d-b*c)/((a+c)*(c+d))
+# Step 2: Calculating risk ratio
+RR <- p1/p0
 
-# Calculating variance and CI
-v_ln <- (b + a_pop*(a+d))/(a+b+c+d)
-lcl <- 1-exp(log(1-a_pop) + 1.96*sqrt(v_ln))
-ucl <- 1-exp(log(1-a_pop) - 1.96*sqrt(v_ln))
+# Step 3: Calculating exposure prevalence
+pe <- (a+b)/N
 
-cat("Risk Ratio:", round(r_hat, 3), "\n")
-cat("Population Attributable Risk:", round(a_pop, 3), "\n")
-cat("95% CI for AR:", round(lcl, 3), "-", round(ucl, 3))
+# Step 4: Calculating population attributable risk
+PAR <- (pe*(RR-1))/(pe*(RR-1)+1)
+
+# Step 5: Calculating variance for confidence interval
+var_ln_1_minus_PAR <- ((1-PAR)/PAR) * ((1-p1)/(p1*(a+b)) + (1-p0)/(p0*(c+d)))
+
+# Step 6: Calculating 95% confidence interval
+ln_1_minus_PAR <- log(1-PAR)
+lcl <- 1 - exp(ln_1_minus_PAR + 1.96*sqrt(var_ln_1_minus_PAR))
+ucl <- 1 - exp(ln_1_minus_PAR - 1.96*sqrt(var_ln_1_minus_PAR))
+
+lcl <- max(0, lcl)
+ucl <- min(1, ucl)
+```
+```{r}
+cat("Risk in bald individuals:", round(p1, 3), "\n")
+cat("Risk in non-bald individuals:", round(p0, 3), "\n")
+cat("Risk Ratio:", round(RR, 3), "\n")
+cat("Population Attributable Risk:", round(PAR, 3), "\n")
+cat("95% CI for PAR:", round(lcl, 3), "-", round(ucl, 3))
 ```
 
 Alright. So based on my analysis of this heart disease study data, I found some interesting but uncertain relationships between baldness and heart disease risk.
