@@ -296,28 +296,27 @@ $Var[ln(1-PAR)] = \frac{0.9463}{0.0537} \times [\frac{0.906}{127.0} + \frac{0.93
 
 $Var[ln(1-PAR)] = 17.621 \times [0.00713 + 0.00171] = 17.621 \times 0.00884 = 0.1556$
 
-Step 5: Calculate the 95% Confidence Interval
-$95% CI = 1 - exp[ln(1-PAR) \pm 1.96 \times \sqrt{Var[ln(1-PAR)]}]$
+Step 5: Calculate the 95\% Confidence Interval
+$95\% CI = 1 - exp[ln(1-PAR) \pm 1.96 \times \sqrt{Var[ln(1-PAR)]}]$
 
 $ln(1-PAR) = ln(1-0.0537) = ln(0.9463) = -0.0551$
 
-$95% CI = 1 - exp[-0.0551 \pm 1.96 \times \sqrt{0.1556}]$
+$95\% CI = 1 - exp[-0.0551 \pm 1.96 \times \sqrt{0.1556}]$
 
-$95% CI = 1 - exp[-0.0551 \pm 1.96 \times 0.3944]$
+$95\% CI = 1 - exp[-0.0551 \pm 1.96 \times 0.3944]$
 
-$95% CI = 1 - exp[-0.0551 \pm 0.7731]$
+$95\% CI = 1 - exp[-0.0551 \pm 0.7731]$
 
-$95% CI = 1 - exp[-0.8282, 0.7180]$
+$95\% CI = 1 - exp[-0.8282, 0.7180]$
 
-$95% CI = 1 - [0.4369, 2.0503]$
+$95\% CI = 1 - [0.4369, 2.0503]$
 
-$95% CI = [0.5631, -1.0503]$ (The upper bound should be capped at 1)
+$95\% CI = [0.5631, -1.0503]$ (The upper bound should be capped at 1)
 
-$95% CI = [0, 0.5631]$ (Ensuring logical bounds)
+$95\% CI = [0, 0.5631]$ (Ensuring logical bounds)
 
 
 ```{r}
-# Defining variables
 a <- 127    # Bald with heart disease
 b <- 1224   # Bald without heart disease 
 c <- 548    # Not bald with heart disease
@@ -356,8 +355,8 @@ cat("Population Attributable Risk:", round(PAR, 3), "\n")
 cat("95% CI for PAR:", round(lcl, 3), "-", round(ucl, 3))
 ```
 
-Alright. So based on my analysis of this heart disease study data, I found some interesting but uncertain relationships between baldness and heart disease risk.
+So based on my calculations, I found that the risk of heart disease in bald individuals is approximately 9.4%, while for non-bald individuals, it is about 6.7%. This results in a risk ratio of 1.4, indicating that bald individuals have a 40% higher risk of developing heart disease compared to non-bald individuals. 
 
-The risk ratio of 1.441 suggests that bald individuals have about 44% higher risk of developing heart disease compared to non-bald individuals. When I looked at the population level impact through the Population Attributable Risk (PAR) of 0.054, this tells me that approx 5.4% of heart disease cases in the population might be attributable to baldness.
+When examining the population-level impact, the Population Attributable Risk (PAR) is 0.054, or 5.4%, meaning that about 5.4% of heart disease cases in the population might be attributable to baldness. 
 
-However, I need to be quite cautious with these interpretations because the 95% confidence interval (-1.135, 0.581) is very wide and includes negative values, which doesn't make practical sense. This unusually wide confidence interval, spanning from negative to positive values, suggests there's a lot of uncertainty in the estimate and the true effect of baldness on heart disease risk isn't very clear. So, while there might be some association between baldness and heart disease, I can't be very confident about its exact magnitude based on this data alone.
+The 95% confidence interval for the PAR ranges from 0 to 0.563, suggesting that while there is some association between baldness and heart disease, the estimate has a wide range of uncertainty meaning this interval reflects the possibility that the true population-level impact could be minimal or as high as 56.3%.
