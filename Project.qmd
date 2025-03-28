@@ -22,7 +22,6 @@ str(chd_data)
 summary(chd_data)
 ```
 
-
 ```{r}
 # 1.2 Check for missing values
 sum(is.na(chd_data))
@@ -32,8 +31,7 @@ chd_data$famhist <- as.factor(chd_data$famhist)
 chd_data$chd <- as.factor(chd_data$chd)
 ```
 
-
-To be added in the report for the analysis. 
+To be added in the report for the analysis.
 
 ```{r}
 # 1.4 Univariate analysis: Creating histograms for continuous variables
@@ -52,7 +50,6 @@ hist_plots <- lapply(cont_vars, hist_plot, data = chd_data)
 # Display the histograms in a grid layout
 grid.arrange(grobs = hist_plots, ncol = 3)
 ```
-
 
 ```{r}
 # 1.5 Bivariate analysis: Boxplots of predictors by CHD status
@@ -124,7 +121,6 @@ Now, I began my preliminary analysis by examining the structure and summary stat
 
 Next, I conducted bivariate analyses using boxplots to explore how each predictor varies according to CHD status. These plots provided initial insights into potential differences between groups. Additionally, I created empirical logit plots for each continuous predictor to visually assess their relationship with the likelihood of CHD. These empirical logit plots allowed me to detect potential linear or nonlinear relationships between predictors and CHD status. Finally, I generated a correlation matrix to check for multicollinearity among predictors and examined the relationship between family history (famhist) and CHD using a chi-square test. This comprehensive preliminary analysis provided me with a solid foundation to better understand the data structure, identify important variables, and guide further modeling efforts.
 
-
 Part 2: Predictor Selection and Transformations (10 points)
 
 ```{r}
@@ -143,8 +139,6 @@ uni_results <- do.call(rbind.data.frame, uni_models)
 uni_results <- uni_results[order(uni_results$AIC),]
 print(uni_results)
 ```
-
-
 
 ```{r}
 # 2.2 Check for potential transformations using Box-Tidwell
@@ -170,8 +164,6 @@ nonlinearity_check <- lapply(cont_vars, check_nonlinearity, data = chd_data)
 nonlinearity_results <- do.call(rbind.data.frame, nonlinearity_check)
 print(nonlinearity_results)
 ```
-
-
 
 ```{r}
 # 2.3 Apply transformations based on nonlinearity check
@@ -231,7 +223,6 @@ interaction_results <- do.call(rbind.data.frame, interaction_results)
 print(interaction_results)
 ```
 
-
 ```{r}
 # 2.5 Building candidate models based on findings
 
@@ -260,8 +251,6 @@ I then explored potential interactions between meaningful pairs of variables, su
 
 Finally, I built candidate logistic regression models incorporating these findings: a base model with all original predictors; a model including the squared age term (as an example transformation); and a model testing the interaction between tobacco and age. Comparing these candidate models using AIC values, I found that the base model without additional transformations or interactions provided the best fit (lowest AIC). This comprehensive approach allowed me to carefully evaluate the necessity of transformations and interactions, ultimately guiding me toward selecting an effective final model for predicting CHD status.
 
-
-
 Part 3: Model Fit Assessment (10 points)
 
 ```{r}
@@ -279,8 +268,6 @@ models_comparison <- data.frame(
 print(models_comparison)
 ```
 
-
-
 ```{r}
 # 3.3 Assessing model fit with residual analysis
 # Selecting final model (assume model3 is best for this example)
@@ -297,8 +284,6 @@ pearson_plot <- ggplot(chd_data, aes(x = fitted(final_model), y = pearson_resid)
 print(pearson_plot)
 ```
 
-
-
 ```{r}
 # 3.4 Creating binned residual plot (more appropriate for logistic regression)
 library(arm)
@@ -308,8 +293,6 @@ binned_resid_plot <- binnedplot(fitted(final_model),
                                ylab = "Average Residual",
                                main = "Binned Residual Plot")
 ```
-
-
 
 ```{r}
 # 3.5 Hosmer-Lemeshow Goodness of Fit Test
@@ -355,7 +338,6 @@ conf_matrix <- table(Predicted = chd_data$predicted_class, Actual = chd_data$chd
 print(conf_matrix)
 ```
 
-
 ```{r}
 # Calculating metrics from confusion matrix
 sensitivity <- conf_matrix[2,2] / sum(conf_matrix[,2])
@@ -372,7 +354,6 @@ metrics <- data.frame(
 print(metrics)
 ```
 
-
 ```{r}
 # 4.5 K-fold cross-validation - First part: Setup
 library(caret)
@@ -382,11 +363,13 @@ library(pROC)
 set.seed(123)
 folds <- createFolds(chd_data$chd, k = 5) # Reduced to 5 folds for faster processing
 ```
+
 ```{r}
 # 4.5 K-fold cross-validation - Second part: Define simplified model for cross-validation
 # Use a simpler model with only the most important predictors
 cv_formula <- as.formula("chd ~ age + tobacco + ldl + famhist")
 ```
+
 ```{r}
 # 4.5 K-fold cross-validation - Third part: Function to process a single fold
 process_fold <- function(test_indices, data, formula, threshold) {
@@ -455,7 +438,6 @@ cv_results_df <- data.frame(
 print(cv_results_df)
 ```
 
-
 ```{r}
 # Combine cross-validation results
 cv_metrics <- do.call(rbind, cv_results)
@@ -470,7 +452,6 @@ cv_results_df <- data.frame(
 print(cv_results_df)
 ```
 
-
 ```{r}
 # 4.6 Learning curve to check if more data would improve model
 library(caret)
@@ -481,7 +462,6 @@ chd_data$chd <- factor(chd_data$chd,
                        levels = c("0", "1"), 
                        labels = c("No_CHD", "Yes_CHD"))
 ```
-
 
 ```{r}
 # 4.6.2 Learning curve - Create sample size sequence and cross-validation control
@@ -499,13 +479,11 @@ cv_control <- trainControl(
 )
 ```
 
-
 ```{r}
 # 4.6.3 Learning curve - Define simplified formula for faster training
 # Use a simpler model with only key predictors
 simple_formula <- as.formula("chd ~ age + tobacco + ldl + famhist")
 ```
-
 
 ```{r}
 # 4.6.4 Learning curve - Process a single sample size
@@ -548,7 +526,6 @@ process_sample_size <- function(size, data, formula, control) {
 }
 ```
 
-
 ```{r}
 # 4.6.5 Learning curve - Process all sample sizes sequentially
 learning_curve_results <- list()
@@ -567,7 +544,6 @@ for(i in seq_along(sizes)) {
 # Combine results
 learning_curve_data <- do.call(rbind, learning_curve_results)
 ```
-
 
 ```{r}
 # 4.6.6 Learning curve - Plot results
@@ -609,7 +585,6 @@ ggplot(learning_curve_data, aes(x = Size)) +
   )
 ```
 
-
 ```{r}
 # Defining formula based on the final model
 formula <- chd ~ sbp + tobacco + ldl + adiposity + typea + 
@@ -621,7 +596,6 @@ learning_curve_data <- calculate_learning_curve(
   formula = formula
 )
 ```
-
 
 ```{r}
 # Plotting learning curve
@@ -687,10 +661,6 @@ To further validate the model, I performed 5-fold cross-validation using a simpl
 
 Overall, the assessments that I demonstrated shows that the model performs reasonably well in predicting CHD status, with strong sensitivity but room for improvement in specificity and precision.
 
-
-
-
-
 Explaining the Final Coronary Heart Disease Prediction Model
 
 Part 1: Understanding the Coefficients (15 points)
@@ -715,6 +685,7 @@ model_summary <- summary(final_model)
 coef_table <- tidy(final_model)
 print(coef_table)
 ```
+
 ```{r}
 # 1.2 Calculating and interpret odds ratios with confidence intervals
 odds_ratios <- exp(coef(final_model))
@@ -736,7 +707,6 @@ kable(or_table,
       caption = "Coefficients and Odds Ratios for CHD Prediction Model")
 ```
 
-
 ```{r}
 # 1.3 Calculating standardized coefficients to compare relative importance
 # First standardize continuous predictors
@@ -756,7 +726,6 @@ std_model <- glm(chd ~ age_std + tobacco_std + ldl_std + sbp_std +
 std_coef_table <- tidy(std_model)
 print(std_coef_table)
 ```
-
 
 ```{r}
 # 1.4 Calculating average marginal effects
@@ -779,7 +748,6 @@ kable(me_table,
       caption = "Average Marginal Effects for CHD Prediction Model")
 ```
 
-
 ```{r}
 # 1.5 Visualize odds ratios to better understand coefficients
 or_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Odds_Ratio)) +
@@ -797,7 +765,6 @@ or_plot <- ggplot(or_table[-1,], aes(x = reorder(Variable, Odds_Ratio), y = Odds
 
 print(or_plot)
 ```
-
 
 ```{r}
 # 1.6 Calculating predicted probabilities for different values of key predictors
@@ -823,8 +790,6 @@ age_prob_plot <- ggplot(age_profile, aes(x = age, y = predicted_prob)) +
 print(age_prob_plot)
 ```
 
-
-
 ```{r}
 # Doing the same for tobacco use
 tobacco_profile <- data.frame(
@@ -848,7 +813,7 @@ tobacco_prob_plot <- ggplot(tobacco_profile, aes(x = tobacco, y = predicted_prob
 print(tobacco_prob_plot)
 ```
 
-Ok so the coefficients in the logistic regression model represent the relationship between each predictor and the log odds of coronary heart disease (CHD). For example, the coefficient for age is 0.042, meaning that for every one-year increase in age, the log odds of CHD increase by 0.042. When converted to an odds ratio using $e^{\beta}$, this corresponds to an odds ratio of 1.043, indicating a 4.3\% increase in the odds of CHD per year of age. Similarly, tobacco has a coefficient of 0.086, translating to an odds ratio of 1.090, suggesting that each unit increase in tobacco consumption raises the odds of CHD by approximately 9\%.
+Ok so the coefficients in the logistic regression model represent the relationship between each predictor and the log odds of coronary heart disease (CHD). For example, the coefficient for age is 0.042, meaning that for every one-year increase in age, the log odds of CHD increase by 0.042. When converted to an odds ratio using $e^{\beta}$, this corresponds to an odds ratio of 1.043, indicating a 4.3% increase in the odds of CHD per year of age. Similarly, tobacco has a coefficient of 0.086, translating to an odds ratio of 1.090, suggesting that each unit increase in tobacco consumption raises the odds of CHD by approximately 9%.
 
 The variable LDL cholesterol has a coefficient of 0.184 and an odds ratio of 1.202, implying that higher LDL levels significantly increase the likelihood of CHD. Family history (famhist) is particularly impactful, with a coefficient of 0.948 and an odds ratio of 2.582, meaning individuals with a positive family history are over two and a half times more likely to develop CHD compared to those without.
 
@@ -856,10 +821,9 @@ On the other hand, systolic blood pressure (sbp) and obesity have coefficients c
 
 Now to compare relative importance across predictors, standardized coefficients were calculated by scaling continuous variables to have mean zero and standard deviation one. This analysis revealed that age ($\beta=0.616$) and tobacco ($\beta=0.402$) are among the most influential predictors when adjusted for scale.
 
-Finally, average marginal effects (AMEs) provided additional insights into how changes in predictors affect the probability of CHD directly. For example, age has an AME of 0.0073, meaning that each additional year increases the probability of CHD by approximately 0.73\%. Similarly, tobacco use increases CHD probability by about 1.48\% per unit increase.
+Finally, average marginal effects (AMEs) provided additional insights into how changes in predictors affect the probability of CHD directly. For example, age has an AME of 0.0073, meaning that each additional year increases the probability of CHD by approximately 0.73%. Similarly, tobacco use increases CHD probability by about 1.48% per unit increase.
 
 These interpretations highlight both the magnitude and significance of predictors in influencing CHD risk, with family history emerging as a particularly strong factor alongside age and LDL cholesterol levels.
-
 
 Part 2: Identifying Important Predictors (15 points)
 
@@ -919,6 +883,7 @@ var_importance_df <- var_importance_df[order(-var_importance_df$AIC_Difference),
 print("Variable importance based on AIC differences:")
 print(var_importance_df)
 ```
+
 ```{r}
 # 2.1.4 Create a clean table comparing both importance metrics
 importance_table <- data.frame(
@@ -952,7 +917,6 @@ library(car)
 vif_values <- vif(final_model)
 print(vif_values)
 ```
-
 
 ```{r}
 # 2.3 Creating a plot comparing different importance metrics
@@ -990,7 +954,6 @@ importance_plot <- ggplot(importance_long,
 print(importance_plot)
 ```
 
-
 ```{r}
 # 2.4 Predictive power - partial dependence plots for top predictors
 library(pdp)
@@ -1025,6 +988,7 @@ simple_pdp <- function(model, data, var) {
   return(plot)
 }
 ```
+
 ```{r}
 # Get top 3 important variables based on AIC difference
 top_vars <- as.character(var_importance_df$Variable[1:3])
@@ -1118,7 +1082,6 @@ contour_plot <- ggplot(contour_data, aes_string(x = top_continuous_vars[1],
 print(contour_plot)
 ```
 
-
 Based on the results, several predictors stand out as particularly important for predicting coronary heart disease (CHD). So using two approaches i.e. z-values from the model coefficients and AIC differences from reduced models, I identified age, family history (famhist), and tobacco use as the most influential variables.
 
 The z-values rank famhist as the most significant predictor, with a z-value of 3.99, indicating that having a family history of CHD strongly increases the likelihood of developing the condition. This aligns with its high AIC difference (14.25), suggesting that removing famhist from the model would significantly reduce its predictive power. Similarly, age has a z-value of 3.94 and an AIC difference of 14.26, highlighting its critical role in predicting CHD risk, as older individuals are more likely to develop the disease. Tobacco use also emerges as important, with a z-value of 3.20 and an AIC difference of 9.11, reflecting its strong association with increased CHD risk.
@@ -1128,4 +1091,3 @@ Other predictors, such as LDL cholesterol (ldl), systolic blood pressure (sbp), 
 The partial dependence plots further illustrate the importance of these top predictors by showing how changes in age, tobacco use, and ldl influence the predicted probability of CHD. These visualizations confirm that increasing values for these predictors substantially raise CHD risk.
 
 In summary, I chose these predictors because they consistently demonstrated strong statistical significance (high z-values) and substantial contributions to model performance (high AIC differences). Their biological relevance further supports their inclusion, as age, family history, and tobacco use are well-established risk factors for CHD.
-
