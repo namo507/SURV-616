@@ -4,3 +4,65 @@ format: pdf
 editor: visual
 ---
 
+## 1a. [10 points] Exploratory Analysis. Read the data into R. Report on each variable using a summary, a figure,  or a table as appropriate. You can ignore the channel(CHANNEL) and region (REGION) for this exercise.
+
+First, let me read the data and perform exploratory analysis on the spending variables.
+
+```{r}
+# Loading the required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(GGally)
+library(corrplot)
+
+# Reading the data
+wholesale_data <- read.csv("/Users/namomac/Downloads/Wholesale customers data.csv")
+
+colnames(wholesale_data)
+
+# Now the summary statistics for the numeric variables
+numeric_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+summary(numeric_vars)
+```
+
+Now let me show the distribution of Spending Variables
+```{r}
+# Creating histograms for each spending variable
+spending_vars <- c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")
+
+# Creating individual histograms
+hist_plots <- list()
+for (var in spending_vars) {
+  p <- ggplot(wholesale_data, aes_string(x = var)) +
+    geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.7) +
+    theme_minimal() +
+    labs(title = paste("Distribution of", var, "Spending"),
+         x = paste(var, "(m.u.)"),
+         y = "Frequency") +
+    theme(plot.title = element_text(size = 10, face = "bold"))
+  hist_plots[[var]] <- p
+}
+
+# Arranging histograms in a grid
+grid.arrange(grobs = hist_plots, ncol = 2)
+```
+
+So when examining the summary statistics for the six spending categories, I noticed striking variations in customer purchasing patterns. 
+
+1. The Fresh category showed the widest spending range meaning while some customers spent as little as 3 monetary units annually, one high-spending customer reached 112,151 units. However, the median (8,504 units) being significantly lower than the mean (12,000 units) suggests most customers cluster at lower spending levels with a few extreme outliers pulling the average up.
+
+2. For Dairy products, I observed a similar pattern. So the average Milk spending (5,796 units) nearly doubled the median (3,627 units), indicating a right-skewed distribution. 
+
+3. Grocery spending followed suit, with 75% of customers spending under 10,656 units despite the maximum reaching 92,780 units. 
+
+4. The Frozen category surprised me with its particularly large gap between the median (1,526 units) and maximum (60,869 units), showing some clients make exceptionally large frozen goods purchases.
+
+
+5. Detergents/Paper products stood out with the most dramatic disparity as the typical customer spent 816.5 units (median), the mean of 2,881.5 units revealed substantial high-end spenders. Delicatessen showed the tightest central tendency overall, though still contained extreme values up to 47,943 units.
+
+
+Hence, across all categories, the consistent pattern of means exceeding medians and large gaps between third quartiles and maximums suggests most customers are moderate spenders, with a small but significant group of wholesale clients making exceptionally large purchases that distort the averages.
+
+
