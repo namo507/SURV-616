@@ -160,5 +160,9 @@ This interpretability strengthens my confidence in choosing K=4. Now, if I went 
 
 So I would say four clusters strikes the right balance for this particular wholesale distribution business context.
 
+## 2b. [10 points] Graph the K-means clustering of the cases based upon the FROZEN and FRESH variables.
+
+
+
 
 
