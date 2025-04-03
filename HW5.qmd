@@ -178,14 +178,16 @@ cluster_vars_scaled <- scale(cluster_vars_log)
 set.seed(123)
 km_result <- kmeans(cluster_vars_scaled, centers = 4, nstart = 25)
 
-# Add cluster assignments back to the original data
+# Adding cluster assignments back to the original data
 cluster_data <- data.frame(
   Fresh = wholesale_data$Fresh,
   Frozen = wholesale_data$Frozen,
   Cluster = as.factor(km_result$cluster)
 )
+```
 
-# Create a scatter plot with cluster coloring
+```{r}
+# Creating a scatter plot with cluster coloring
 ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
   geom_point(alpha = 0.7) +
   scale_color_brewer(palette = "Set1") +
@@ -193,8 +195,10 @@ ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
        x = "Fresh Spending (m.u.)",
        y = "Frozen Spending (m.u.)") +
   theme_minimal()
+```
 
-# Create a second plot with log-transformed axes for better visualization
+```{r}
+# Creating a second plot with log-transformed axes for better visualization
 ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
   geom_point(alpha = 0.7) +
   scale_color_brewer(palette = "Set1") +
@@ -205,8 +209,11 @@ ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
        x = "Fresh Spending (log scale, m.u.)",
        y = "Frozen Spending (log scale, m.u.)") +
   theme_minimal()
+```
 
-# Calculate cluster centers in original scale
+
+```{r}
+# Calculating cluster centers in original scale
 centers_original <- matrix(0, nrow = 4, ncol = 2)
 for (i in 1:4) {
   centers_original[i,] <- colMeans(cluster_vars[km_result$cluster == i,])
@@ -216,8 +223,10 @@ centers_df <- data.frame(
   Frozen = centers_original[,2],
   Cluster = as.factor(1:4)
 )
+```
 
-# Create a log-transformed plot with cluster centers marked
+```{r}
+# Now I will create a log-transformed plot with cluster centers marked
 ggplot() +
   geom_point(data = cluster_data, aes(x = Fresh, y = Frozen, color = Cluster), alpha = 0.7) +
   geom_point(data = centers_df, aes(x = Fresh, y = Frozen, color = Cluster), size = 5, shape = 8) +
@@ -230,6 +239,18 @@ ggplot() +
        y = "Frozen Spending (log scale, m.u.)") +
   theme_minimal()
 ```
+
+So based on Fresh and Frozen product purchasing pattern, the four distinct customer segments are:
+
+**Cluster 1 (Red):** These customers have high spending on Fresh products but relatively low spending on Frozen products. So I feel they might represent restaurants, fresh produce markets, or retailers with a focus on fresh ingredients.
+
+**Cluster 2 (Blue):** This group shows moderate spending on both Fresh and Frozen products, suggesting general retailers or smaller supermarkets with balanced inventory needs.
+
+**Cluster 3 (Green):** These customers have higher spending on Frozen products relative to their Fresh product purchases. Now I think they might be convenience stores, small grocers specializing in frozen foods, or food service operations with limited fresh ingredient preparation.
+
+**Cluster 4 (Purple):** This cluster represents high spenders in both categories, likely representing larger supermarkets or wholesale buyers serving multiple locations.
+
+
 
 
 
