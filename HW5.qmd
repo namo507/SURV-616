@@ -98,6 +98,67 @@ Another consideration is the high correlations I suspect might exist between cat
 
 I feel these approaches would help identify more meaningful customer segments based on their overall purchasing behavior rather than redundant information being counted twice.
 
-## 1c. 
+## 2. The first task will be to create groups using the variables FROZEN and FRESH only. For this task, ignore the other variables in the dataset.
+ 
+## 2a. [5 points] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
+
+Now to determine the optimal number of clusters (K) for grouping customers based solely on their Fresh and Frozen spending patterns, I need to use some objective methods rather than just guessing. So I will be using this code:
+
+```{r}
+# Extracting just the Fresh and Frozen variables
+cluster_vars <- wholesale_data[, c("Fresh", "Frozen")]
+
+# Applying log transformation to address the skewness
+cluster_vars_log <- log1p(cluster_vars)
+
+# Scaling the log-transformed data
+cluster_vars_scaled <- scale(cluster_vars_log)
+
+# Using the Elbow method to find optimal K
+wss <- sapply(1:10, function(k) {
+  kmeans(cluster_vars_scaled, centers = k, nstart = 25)$tot.withinss
+})
+```
+
+```{r}
+# Plotting the Elbow curve
+plot(1:10, wss, type = "b", pch = 19,
+     xlab = "Number of clusters (k)",
+     ylab = "Total within-cluster sum of squares",
+     main = "Elbow Method for Optimal k")
+```
+
+Another way to check the number of clusters:
+
+```{r}
+# Using Silhouette method for validation
+library(cluster)
+sil_width <- sapply(2:10, function(k) {
+  km <- kmeans(cluster_vars_scaled, centers = k, nstart = 25)
+  ss <- silhouette(km$cluster, dist(cluster_vars_scaled))
+  mean(ss[,3])
+})
+
+# Plot Silhouette scores
+plot(2:10, sil_width, type = "b", pch = 19,
+     xlab = "Number of clusters (k)",
+     ylab = "Average silhouette width",
+     main = "Silhouette Method for Optimal k")
+```
+
+After examining both the elbow method and silhouette scores, I'm going with K=4 for this clustering task. Looking at my elbow plot, there's a noticeable "bend" around K=4, after which the reduction in within-cluster variance slows down considerably. 
+
+Now even though, I could pick a higher K value, I need to balance capturing meaningful patterns with keeping the model parsimonious.
+
+Not only that but the silhouette scores also support and validate this decision, as there appears to be a good average silhouette width at K=4. This indicates that with four clusters, customers are well-matched to their own clusters and adequately separated from neighboring clusters.
+
+Ok so when I visualize these four clusters in the Fresh vs. Frozen space, they seem to represent distinct customer segments that make intuitive sense for the wholesaler's business 
+
+So maybe, likely one group with high Fresh but low Frozen spending (possibly restaurants or fresh produce retailers), another with high Frozen but lower Fresh spending (maybe convenience stores or frozen food specialists), a third with moderate spending across both categories (perhaps smaller general retailers), and a fourth showing different spending patterns (possibly institutional buyers like schools or hospitals). 
+
+This interpretability strengthens my confidence in choosing K=4. Now, if I went with more clusters, I might create divisions that don't represent truly distinct customer behavior patterns, while fewer clusters would miss important variations in purchasing habits that could be valuable for the wholesaler's marketing strategy. 
+
+So I would say four clusters strikes the right balance for this particular wholesale distribution business context.
+
 
 
