@@ -302,6 +302,160 @@ So after examining both methods with all six variables, I'm selecting K=4 as the
 
 So this decision maintains consistency with my earlier analysis on just Fresh and Frozen variables, which also identified four clusters as optimal. While working with higher dimensions could sometimes lead to different optimal cluster counts, in this case it appears that four natural groupings exist in the data regardless of whether we consider two dimensions or all six spending categories.
 
+## 3b. [20 points] List the values of the 6 variables at each center. Write a one sentence description of each group. How is each unique?
+
+```{r}
+# Extracting all six spending variables
+all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+
+# Applying log transformation to address the skewness
+all_vars_log <- log1p(all_vars)
+
+# Scaling the log-transformed data
+all_vars_scaled <- scale(all_vars_log)
+
+# Applying K-means clustering with k=4
+set.seed(123)
+km_result_full <- kmeans(all_vars_scaled, centers = 4, nstart = 25)
+
+# Getting the cluster centers in the scaled log space
+centers_scaled <- km_result_full$centers
+
+# Converting centers back to original scale
+centers_original <- matrix(0, nrow = 4, ncol = 6)
+for (i in 1:4) {
+  # First get the mean and standard deviation of the log-transformed data
+  means_log <- colMeans(all_vars_log)
+  sds_log <- apply(all_vars_log, 2, sd)
+  
+  # Back-transform from scaled to log space
+  centers_log <- centers_scaled[i,] * sds_log + means_log
+  
+  # Back-transform from log to original space
+  centers_original[i,] <- exp(centers_log) - 1
+}
+```
+
+```{r}
+# Creating a data frame for easy viewing
+centers_df <- data.frame(
+  Cluster = 1:4,
+  Fresh = round(centers_original[,1], 1),
+  Milk = round(centers_original[,2], 1),
+  Grocery = round(centers_original[,3], 1),
+  Frozen = round(centers_original[,4], 1),
+  Detergents_Paper = round(centers_original[,5], 1),
+  Delicassen = round(centers_original[,6], 1)
+)
+
+print("Cluster Centers in Original Scale:")
+print(centers_df)
+
+# Calculating cluster sizes
+cluster_sizes <- table(km_result_full$cluster)
+print("Cluster Sizes:")
+print(cluster_sizes)
+```
+
+So the clusters revealed four distinct customer spending profiles when analyzing all six product categories. 
+
+**Cluster 1 (130 customers)** stands out as big spenders on fresh products (13,728 units average) and frozen goods (3,864 units), but they're relatively light buyers of other categories meaning their detergent/paper spending averages just 480 units. 
+
+**Cluster 2** is the smallest group **(61 customers)** with an unusual pattern. It has extremely low fresh spending (903 units) but heavy investment in groceries (10,129 units) and detergents/paper (3,426 units), suggesting these might be specialty stores or cleaning supply businesses.
+
+**Cluster 3 (119 customers)** emerged as the broadest purchasers, leading in milk (9,028 units), grocery (13,276 units), and detergents/paper (4,777 units). These appear to be general-purpose retailers or supermarkets. 
+
+The final **Cluster 4 (130 customers)** shows restrained spending across all categories except moderate frozen purchases (1,318 units), likely representing small convenience stores or low-volume buyers.
+
+
+
+```{r}
+# Calculating relative spending profiles 
+#(to compare where each cluster spends more/less)
+
+# Calculating overall average spending in each category
+overall_means <- colMeans(all_vars)
+
+# Calculating relative spending (cluster center / overall mean)
+relative_spending <- matrix(0, nrow = 4, ncol = 6)
+for (i in 1:4) {
+  relative_spending[i,] <- centers_original[i,] / overall_means
+}
+
+# Creating a data frame
+relative_df <- data.frame(
+  Cluster = 1:4,
+  Fresh = round(relative_spending[,1], 2),
+  Milk = round(relative_spending[,2], 2),
+  Grocery = round(relative_spending[,3], 2),
+  Frozen = round(relative_spending[,4], 2),
+  Detergents_Paper = round(relative_spending[,5], 2),
+  Delicassen = round(relative_spending[,6], 2)
+)
+
+
+print("Relative Spending Profiles (values > 1 indicate above-average spending):")
+print(relative_df)
+```
+
+**Cluster 1** spends 14% more on fresh products and 26% more on frozen goods compared to average customers, but their purchases look strikingly low elsewhere. So they buy only 17% of the average detergents/paper spending and half the typical milk expenditure. This makes me think they're likely restaurants or meal prep services focused on core ingredients.
+
+
+**Cluster 2** surprised me with their extreme specialization since they spend 27% more on groceries and 19% more on detergents/paper than average, but barely touch fresh (8% of average) or frozen (10%) products. These could be cleaning supply retailers combined with grocery stores. 
+
+**Cluster 3** emerged as the all-round big spenders, purchasing 56% more milk, 67% more groceries, and 66% more detergents/paper than average.
+
+**Cluster 4** is interesting. So every category sits well below average, with detergent/paper spending at just 6% of the mean. These appear to be extremely budget-conscious buyers or perhaps small corner stores with limited shelf space.
+
+
+```{r}
+library(tidyr)
+
+# Reshape data for plotting
+centers_long <- centers_df %>%
+  pivot_longer(cols = -Cluster, names_to = "Category", values_to = "Spending")
+
+# Plotting cluster centers
+ggplot(centers_long, aes(x = Category, y = Spending, fill = factor(Cluster))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_brewer(palette = "Set1", name = "Cluster") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Spending Patterns by Cluster",
+       x = "Product Category",
+       y = "Average Spending (m.u.)")
+```
+
+       
+```{r}
+# Plotting relative spending profiles
+relative_long <- relative_df %>%
+  pivot_longer(cols = -Cluster, names_to = "Category", values_to = "RelativeSpending")
+
+ggplot(relative_long, aes(x = Category, y = RelativeSpending, fill = factor(Cluster))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_brewer(palette = "Set1", name = "Cluster") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Relative Spending Profiles by Cluster",
+       subtitle = "Values above 1 indicate above-average spending",
+       x = "Product Category",
+       y = "Relative Spending (cluster average / overall average)")
+```
+
+
+So based on the cluster centers and relative spending patterns:
+
+**Cluster 1: Can be described as Fresh Food Specialists**. So this group shows exceptionally high spending on Fresh products while having below-average spending in most other categories, suggesting these are likely restaurants, fresh markets, or food service businesses that prioritize fresh ingredients over processed or packaged goods.
+
+**Cluster 2: Grocery and Household Retailers**. With their highest spending in Grocery, Milk, and Detergents/Paper products but relatively low spending on Fresh and Frozen items, these customers appear to be retail stores focused on shelf-stable products and household essentials.
+
+**Cluster 3: Full-Service Supermarkets**. These customers have the highest overall spending across nearly all categories, particularly in Grocery, Detergents/Paper, and Milk, indicating they are likely large supermarkets or hypermarkets serving diverse consumer needs.
+
+**Cluster 4: Small General Retailers** This cluster shows consistently below-average spending across all categories, with values roughly 1/3 to 1/2 of the overall means, suggesting these are small convenience stores or mini-markets with limited inventory requirements.
+
+
 
 
 
