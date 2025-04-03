@@ -250,6 +250,57 @@ So based on Fresh and Frozen product purchasing pattern, the four distinct custo
 
 **Cluster 4 (Purple):** This cluster represents high spenders in both categories, likely representing larger supermarkets or wholesale buyers serving multiple locations.
 
+## 3. The second task will be to create groups based upon the 6 continuous variables in the data set: FRESH, MILK, GROCERY, FROZEN, DETERGENTS_PAPER, and DELICATESSEN.
+
+## 3a. [5 points] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
+
+
+Ok so now that I'm working with all six spending variables instead of just Fresh and Frozen, I need to reconsider the optimal number of clusters. 
+
+But this is a more complex clustering problem since I am now moving from 2D to 6D space, so I'll apply the same methodical approach:
+
+```{r}
+# Extracting all six spending variables
+all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+
+# Applying log transformation to address the skewness
+all_vars_log <- log1p(all_vars)
+
+# Scaling the log-transformed data
+all_vars_scaled <- scale(all_vars_log)
+
+# Using the Elbow method with the full dataset
+wss_full <- sapply(1:10, function(k) {
+  kmeans(all_vars_scaled, centers = k, nstart = 25)$tot.withinss
+})
+```
+
+```{r}
+# Plotting the Elbow curve
+plot(1:10, wss_full, type = "b", pch = 19,
+     xlab = "Number of clusters (k)",
+     ylab = "Total within-cluster sum of squares",
+     main = "Elbow Method for All Six Variables")
+```
+
+```{r}
+# Using Silhouette method
+sil_width_full <- sapply(2:10, function(k) {
+  km <- kmeans(all_vars_scaled, centers = k, nstart = 25)
+  ss <- silhouette(km$cluster, dist(all_vars_scaled))
+  mean(ss[,3])
+})
+
+# Plotting Silhouette scores
+plot(2:10, sil_width_full, type = "b", pch = 19,
+     xlab = "Number of clusters (k)",
+     ylab = "Average silhouette width",
+     main = "Silhouette Method for All Six Variables")
+```
+
+So after examining both methods with all six variables, I'm selecting K=4 as the optimal number of clusters. Looking at my elbow plot, there's a distinct bend at K=4, suggesting this is where adding more clusters starts giving diminishing returns in terms of explained variance. The silhouette analysis also supports this choice, as there appears to be a reasonable average silhouette width at K=4.
+
+So this decision maintains consistency with my earlier analysis on just Fresh and Frozen variables, which also identified four clusters as optimal. While working with higher dimensions could sometimes lead to different optimal cluster counts, in this case it appears that four natural groupings exist in the data regardless of whether we consider two dimensions or all six spending categories.
 
 
 
