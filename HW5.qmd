@@ -458,5 +458,82 @@ So based on the cluster centers and relative spending patterns:
 
 
 
+## 4.[10 points] Create a two-way table showing how the groups from Question #2 and #3 intersect. Give a brief description of how the two sets of clusters relate.
+
+```{r}
+# For Question 2 - clustering based on Fresh and Frozen only
+cluster_vars <- wholesale_data[, c("Fresh", "Frozen")]
+cluster_vars_log <- log1p(cluster_vars)
+cluster_vars_scaled <- scale(cluster_vars_log)
+set.seed(123)
+km_result_2d <- kmeans(cluster_vars_scaled, centers = 4, nstart = 25)
+
+# For Question 3 - clustering based on all six variables
+all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+all_vars_log <- log1p(all_vars)
+all_vars_scaled <- scale(all_vars_log)
+set.seed(123)
+km_result_6d <- kmeans(all_vars_scaled, centers = 4, nstart = 25)
+
+# Creating a contingency table
+contingency_table <- table(
+  `Fresh-Frozen Clusters` = km_result_2d$cluster,
+  `All Variables Clusters` = km_result_6d$cluster
+)
+
+print("Contingency Table of Cluster Assignments:")
+print(contingency_table)
+```
+
+The cross-analysis revealed fascinating overlaps between the two clustering approaches. 
+
+Fresh-Frozen Cluster 1 (from the 2-variable model) aligns strongly with All-Variables Cluster 1 . I see that 87 of its 130 customers stayed grouped together when considering all spending categories. But it also split into Clusters 3 and 4 in the full model, telling me that some customers who looked similar in fresh/frozen spending actually differ significantly in other categories like detergents or delicatessen.
+
+
+The most dramatic shift appears in Fresh-Frozen Cluster 2 since only 7 customers remained in All-Variables Cluster 2, while 60 moved to Cluster 3 and 55 to Cluster 4. 
+
+This shows that customers who appeared as mid-range fresh/frozen spenders actually divide into distinct groups when considering their full purchasing patterns.
+
+Interestingly, All-Variables Cluster 2 seems to draw customers almost exclusively from Fresh-Frozen Clusters 3 and 4 (19+35=54 of its 61 total). 
+
+This suggests the full model uncovered a specialty buyer group that the fresh/frozen-focused approach couldn't detect. Maybe likely those heavy detergent/paper spenders we saw earlier. The patterns confirm that while fresh/frozen spending provides some segmentation clues, considering all categories reveals more nuanced customer profiles that would be crucial for targeted marketing.
+
+```{r}
+# Calculating percentages within Fresh-Frozen clusters
+prop_table <- prop.table(contingency_table, 1) * 100
+print("Percentage Distribution (row percentages):")
+print(round(prop_table, 1))
+```
+
+```{r}
+# Visualize the relationship with a mosaic plot
+mosaicplot(contingency_table, 
+           main = "Relationship Between Clustering Solutions",
+           xlab = "Fresh-Frozen Clusters",
+           ylab = "All Variables Clusters",
+           shade = TRUE,
+           color = TRUE)
+
+# Create a more detailed heatmap
+library(ggplot2)
+library(reshape2)
+
+# Convert to data frame for ggplot
+heatmap_data <- as.data.frame(as.table(contingency_table))
+names(heatmap_data) <- c("Fresh_Frozen_Cluster", "All_Variables_Cluster", "Count")
+
+# Create heatmap
+ggplot(heatmap_data, aes(x = Fresh_Frozen_Cluster, y = All_Variables_Cluster, fill = Count)) +
+  geom_tile() +
+  geom_text(aes(label = Count), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  theme_minimal() +
+  labs(title = "Intersection of Clustering Solutions",
+       x = "Fresh-Frozen Clusters",
+       y = "All Variables Clusters",
+       fill = "Number of\nCustomers")
+```
+
+
 
 
