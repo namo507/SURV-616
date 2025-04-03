@@ -66,3 +66,36 @@ So when examining the summary statistics for the six spending categories, I noti
 Hence, across all categories, the consistent pattern of means exceeding medians and large gaps between third quartiles and maximums suggests most customers are moderate spenders, with a small but significant group of wholesale clients making exceptionally large purchases that distort the averages.
 
 
+## 1b. [5 points] Feature Engineering. What pre-processing steps are necessary before applying K-means? Are there any transformations of the data to consider for this problem? Explain your choices.
+
+So before applying K-means clustering to this wholesale customer dataset, I need to consider several pre-processing steps to ensure meaningful results.
+
+```{r}
+# First, let me check for missing values
+missing_values <- colSums(is.na(numeric_vars))
+print("Missing values in each variable:")
+print(missing_values)
+
+# Now Looking at the scale differences between variables
+var_scales <- sapply(numeric_vars, function(x) c(mean = mean(x), sd = sd(x), min = min(x), max = max(x)))
+print("Scale differences between variables:")
+print(var_scales)
+```
+
+So firstly, I'm relieved to find no missing values in the dataset, which saves me from dealing with imputation. 
+
+However, the scale differences between variables are quite dramatic:
+
+Fresh products have values reaching 112,151 units with a mean around 12,000, while Delicatessen products average only 1,525 units. 
+
+Since K-means uses Euclidean distance, I'll definitely need to standardize all variables to prevent Fresh and Grocery categories from completely dominating the clustering process.
+
+I'm also concerned about those extremely right-skewed distributions I observed in the histograms. So looking at the standard deviations (Fresh at 12,647, compared to Delicatessen at 2,820), it's clear that outliers could heavily distort my cluster centers. 
+
+I think applying a log transformation would be particularly beneficial here since it will compress those extreme values while preserving the relative differences that matter for customer segmentation. Not only that but this actually makes sense intuitively too since in retail spending patterns, relative percentage differences often matter more than absolute monetary differences.
+
+Another consideration is the high correlations I suspect might exist between categories like Grocery and Detergents_Paper. If these are strongly correlated, I might consider using Principal Component Analysis (PCA) to reduce dimensions while preserving the most important variations in spending patterns. 
+
+I feel these approaches would help identify more meaningful customer segments based on their overall purchasing behavior rather than redundant information being counted twice.
+
+
