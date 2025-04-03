@@ -162,6 +162,74 @@ So I would say four clusters strikes the right balance for this particular whole
 
 ## 2b. [10 points] Graph the K-means clustering of the cases based upon the FROZEN and FRESH variables.
 
+So the best way will be by creating a scatter plot that shows the four clusters I identified:
+
+```{r}
+# Extracting the Fresh and Frozen variables
+cluster_vars <- wholesale_data[, c("Fresh", "Frozen")]
+
+# Applying log transformation to address the skewness
+cluster_vars_log <- log1p(cluster_vars)
+
+# Scaling the log-transformed data
+cluster_vars_scaled <- scale(cluster_vars_log)
+
+# Performing K-means clustering with k=4
+set.seed(123)
+km_result <- kmeans(cluster_vars_scaled, centers = 4, nstart = 25)
+
+# Add cluster assignments back to the original data
+cluster_data <- data.frame(
+  Fresh = wholesale_data$Fresh,
+  Frozen = wholesale_data$Frozen,
+  Cluster = as.factor(km_result$cluster)
+)
+
+# Create a scatter plot with cluster coloring
+ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
+  geom_point(alpha = 0.7) +
+  scale_color_brewer(palette = "Set1") +
+  labs(title = "K-means Clustering (k=4) Based on Fresh and Frozen Spending",
+       x = "Fresh Spending (m.u.)",
+       y = "Frozen Spending (m.u.)") +
+  theme_minimal()
+
+# Create a second plot with log-transformed axes for better visualization
+ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
+  geom_point(alpha = 0.7) +
+  scale_color_brewer(palette = "Set1") +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(title = "K-means Clustering (k=4) Based on Fresh and Frozen Spending",
+       subtitle = "Log-transformed scales for better visualization",
+       x = "Fresh Spending (log scale, m.u.)",
+       y = "Frozen Spending (log scale, m.u.)") +
+  theme_minimal()
+
+# Calculate cluster centers in original scale
+centers_original <- matrix(0, nrow = 4, ncol = 2)
+for (i in 1:4) {
+  centers_original[i,] <- colMeans(cluster_vars[km_result$cluster == i,])
+}
+centers_df <- data.frame(
+  Fresh = centers_original[,1],
+  Frozen = centers_original[,2],
+  Cluster = as.factor(1:4)
+)
+
+# Create a log-transformed plot with cluster centers marked
+ggplot() +
+  geom_point(data = cluster_data, aes(x = Fresh, y = Frozen, color = Cluster), alpha = 0.7) +
+  geom_point(data = centers_df, aes(x = Fresh, y = Frozen, color = Cluster), size = 5, shape = 8) +
+  scale_color_brewer(palette = "Set1") +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(title = "K-means Clusters with Cluster Centers",
+       subtitle = "Log-transformed scales with × marking cluster centers",
+       x = "Fresh Spending (log scale, m.u.)",
+       y = "Frozen Spending (log scale, m.u.)") +
+  theme_minimal()
+```
 
 
 
