@@ -98,4 +98,6 @@ Another consideration is the high correlations I suspect might exist between cat
 
 I feel these approaches would help identify more meaningful customer segments based on their overall purchasing behavior rather than redundant information being counted twice.
 
+## 1c. 
+
 
