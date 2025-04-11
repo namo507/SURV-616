@@ -4,7 +4,7 @@ format: pdf
 editor: visual
 ---
 
-## 1a. [10 points] Exploratory Analysis. Read the data into R. Report on each variable using a summary, a figure,  or a table as appropriate. You can ignore the channel(CHANNEL) and region (REGION) for this exercise.
+## 1a. \[10 points\] Exploratory Analysis. Read the data into R. Report on each variable using a summary, a figure, or a table as appropriate. You can ignore the channel(CHANNEL) and region (REGION) for this exercise.
 
 First, let me read the data and perform exploratory analysis on the spending variables.
 
@@ -23,14 +23,17 @@ wholesale_data <- read.csv("/Users/namomac/Downloads/Wholesale customers data.cs
 colnames(wholesale_data)
 
 # Now the summary statistics for the numeric variables
-numeric_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+numeric_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", 
+                                   "Detergents_Paper", "Delicassen")]
 summary(numeric_vars)
 ```
 
 Now let me show the distribution of Spending Variables
+
 ```{r}
 # Creating histograms for each spending variable
-spending_vars <- c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")
+spending_vars <- c("Fresh", "Milk", "Grocery", "Frozen", 
+                   "Detergents_Paper", "Delicassen")
 
 # Creating individual histograms
 hist_plots <- list()
@@ -49,24 +52,21 @@ for (var in spending_vars) {
 grid.arrange(grobs = hist_plots, ncol = 2)
 ```
 
-So when examining the summary statistics for the six spending categories, I noticed striking variations in customer purchasing patterns. 
+So when examining the summary statistics for the six spending categories, I noticed striking variations in customer purchasing patterns.
 
-1. The Fresh category showed the widest spending range meaning while some customers spent as little as 3 monetary units annually, one high-spending customer reached 112,151 units. However, the median (8,504 units) being significantly lower than the mean (12,000 units) suggests most customers cluster at lower spending levels with a few extreme outliers pulling the average up.
+1.  The Fresh category showed the widest spending range meaning while some customers spent as little as 3 monetary units annually, one high-spending customer reached 112,151 units. However, the median (8,504 units) being significantly lower than the mean (12,000 units) suggests most customers cluster at lower spending levels with a few extreme outliers pulling the average up.
 
-2. For Dairy products, I observed a similar pattern. So the average Milk spending (5,796 units) nearly doubled the median (3,627 units), indicating a right-skewed distribution. 
+2.  For Dairy products, I observed a similar pattern. So the average Milk spending (5,796 units) nearly doubled the median (3,627 units), indicating a right-skewed distribution.
 
-3. Grocery spending followed suit, with 75% of customers spending under 10,656 units despite the maximum reaching 92,780 units. 
+3.  Grocery spending followed suit, with 75% of customers spending under 10,656 units despite the maximum reaching 92,780 units.
 
-4. The Frozen category surprised me with its particularly large gap between the median (1,526 units) and maximum (60,869 units), showing some clients make exceptionally large frozen goods purchases.
+4.  The Frozen category surprised me with its particularly large gap between the median (1,526 units) and maximum (60,869 units), showing some clients make exceptionally large frozen goods purchases.
 
-
-5. Detergents/Paper products stood out with the most dramatic disparity as the typical customer spent 816.5 units (median), the mean of 2,881.5 units revealed substantial high-end spenders. Delicatessen showed the tightest central tendency overall, though still contained extreme values up to 47,943 units.
-
+5.  Detergents/Paper products stood out with the most dramatic disparity as the typical customer spent 816.5 units (median), the mean of 2,881.5 units revealed substantial high-end spenders. Delicatessen showed the tightest central tendency overall, though still contained extreme values up to 47,943 units.
 
 Hence, across all categories, the consistent pattern of means exceeding medians and large gaps between third quartiles and maximums suggests most customers are moderate spenders, with a small but significant group of wholesale clients making exceptionally large purchases that distort the averages.
 
-
-## 1b. [5 points] Feature Engineering. What pre-processing steps are necessary before applying K-means? Are there any transformations of the data to consider for this problem? Explain your choices.
+## 1b. \[5 points\] Feature Engineering. What pre-processing steps are necessary before applying K-means? Are there any transformations of the data to consider for this problem? Explain your choices.
 
 So before applying K-means clustering to this wholesale customer dataset, I need to consider several pre-processing steps to ensure meaningful results.
 
@@ -77,30 +77,33 @@ print("Missing values in each variable:")
 print(missing_values)
 
 # Now Looking at the scale differences between variables
-var_scales <- sapply(numeric_vars, function(x) c(mean = mean(x), sd = sd(x), min = min(x), max = max(x)))
+var_scales <- sapply(numeric_vars, function(x) c(mean = mean(x), 
+                                                 sd = sd(x), 
+                                                 min = min(x), 
+                                                 max = max(x)))
 print("Scale differences between variables:")
 print(var_scales)
 ```
 
-So firstly, I'm relieved to find no missing values in the dataset, which saves me from dealing with imputation. 
+So firstly, I'm relieved to find no missing values in the dataset, which saves me from dealing with imputation.
 
 However, the scale differences between variables are quite dramatic:
 
-Fresh products have values reaching 112,151 units with a mean around 12,000, while Delicatessen products average only 1,525 units. 
+Fresh products have values reaching 112,151 units with a mean around 12,000, while Delicatessen products average only 1,525 units.
 
 Since K-means uses Euclidean distance, I'll definitely need to standardize all variables to prevent Fresh and Grocery categories from completely dominating the clustering process.
 
-I'm also concerned about those extremely right-skewed distributions I observed in the histograms. So looking at the standard deviations (Fresh at 12,647, compared to Delicatessen at 2,820), it's clear that outliers could heavily distort my cluster centers. 
+I'm also concerned about those extremely right-skewed distributions I observed in the histograms. So looking at the standard deviations (Fresh at 12,647, compared to Delicatessen at 2,820), it's clear that outliers could heavily distort my cluster centers.
 
 I think applying a log transformation would be particularly beneficial here since it will compress those extreme values while preserving the relative differences that matter for customer segmentation. Not only that but this actually makes sense intuitively too since in retail spending patterns, relative percentage differences often matter more than absolute monetary differences.
 
-Another consideration is the high correlations I suspect might exist between categories like Grocery and Detergents_Paper. If these are strongly correlated, I might consider using Principal Component Analysis (PCA) to reduce dimensions while preserving the most important variations in spending patterns. 
+Another consideration is the high correlations I suspect might exist between categories like Grocery and Detergents_Paper. If these are strongly correlated, I might consider using Principal Component Analysis (PCA) to reduce dimensions while preserving the most important variations in spending patterns.
 
 I feel these approaches would help identify more meaningful customer segments based on their overall purchasing behavior rather than redundant information being counted twice.
 
 ## 2. The first task will be to create groups using the variables FROZEN and FRESH only. For this task, ignore the other variables in the dataset.
- 
-## 2a. [5 points] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
+
+## 2a. \[5 points\] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
 
 Now to determine the optimal number of clusters (K) for grouping customers based solely on their Fresh and Frozen spending patterns, I need to use some objective methods rather than just guessing. So I will be using this code:
 
@@ -146,21 +149,21 @@ plot(2:10, sil_width, type = "b", pch = 19,
      main = "Silhouette Method for Optimal k")
 ```
 
-After examining both the elbow method and silhouette scores, I'm going with K=4 for this clustering task. Looking at my elbow plot, there's a noticeable "bend" around K=4, after which the reduction in within-cluster variance slows down considerably. 
+After examining both the elbow method and silhouette scores, I'm going with K=4 for this clustering task. Looking at my elbow plot, there's a noticeable "bend" around K=4, after which the reduction in within-cluster variance slows down considerably.
 
 Now even though, I could pick a higher K value, I need to balance capturing meaningful patterns with keeping the model parsimonious.
 
 Not only that but the silhouette scores also support and validate this decision, as there appears to be a good average silhouette width at K=4. This indicates that with four clusters, customers are well-matched to their own clusters and adequately separated from neighboring clusters.
 
-Ok so when I visualize these four clusters in the Fresh vs. Frozen space, they seem to represent distinct customer segments that make intuitive sense for the wholesaler's business 
+Ok so when I visualize these four clusters in the Fresh vs. Frozen space, they seem to represent distinct customer segments that make intuitive sense for the wholesaler's business
 
-So maybe, likely one group with high Fresh but low Frozen spending (possibly restaurants or fresh produce retailers), another with high Frozen but lower Fresh spending (maybe convenience stores or frozen food specialists), a third with moderate spending across both categories (perhaps smaller general retailers), and a fourth showing different spending patterns (possibly institutional buyers like schools or hospitals). 
+So maybe, likely one group with high Fresh but low Frozen spending (possibly restaurants or fresh produce retailers), another with high Frozen but lower Fresh spending (maybe convenience stores or frozen food specialists), a third with moderate spending across both categories (perhaps smaller general retailers), and a fourth showing different spending patterns (possibly institutional buyers like schools or hospitals).
 
-This interpretability strengthens my confidence in choosing K=4. Now, if I went with more clusters, I might create divisions that don't represent truly distinct customer behavior patterns, while fewer clusters would miss important variations in purchasing habits that could be valuable for the wholesaler's marketing strategy. 
+This interpretability strengthens my confidence in choosing K=4. Now, if I went with more clusters, I might create divisions that don't represent truly distinct customer behavior patterns, while fewer clusters would miss important variations in purchasing habits that could be valuable for the wholesaler's marketing strategy.
 
 So I would say four clusters strikes the right balance for this particular wholesale distribution business context.
 
-## 2b. [10 points] Graph the K-means clustering of the cases based upon the FROZEN and FRESH variables.
+## 2b. \[10 points\] Graph the K-means clustering of the cases based upon the FROZEN and FRESH variables.
 
 So the best way will be by creating a scatter plot that shows the four clusters I identified:
 
@@ -191,7 +194,8 @@ cluster_data <- data.frame(
 ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
   geom_point(alpha = 0.7) +
   scale_color_brewer(palette = "Set1") +
-  labs(title = "K-means Clustering (k=4) Based on Fresh and Frozen Spending",
+  labs(title = "K-means Clustering (k=4) Based on 
+       Fresh and Frozen Spending",
        x = "Fresh Spending (m.u.)",
        y = "Frozen Spending (m.u.)") +
   theme_minimal()
@@ -210,7 +214,6 @@ ggplot(cluster_data, aes(x = Fresh, y = Frozen, color = Cluster)) +
        y = "Frozen Spending (log scale, m.u.)") +
   theme_minimal()
 ```
-
 
 ```{r}
 # Calculating cluster centers in original scale
@@ -234,7 +237,8 @@ ggplot() +
   scale_x_log10() +
   scale_y_log10() +
   labs(title = "K-means Clusters with Cluster Centers",
-       subtitle = "Log-transformed scales with × marking cluster centers",
+       subtitle = "Log-transformed scales with × marking 
+       cluster centers",
        x = "Fresh Spending (log scale, m.u.)",
        y = "Frozen Spending (log scale, m.u.)") +
   theme_minimal()
@@ -252,16 +256,17 @@ So based on Fresh and Frozen product purchasing pattern, the four distinct custo
 
 ## 3. The second task will be to create groups based upon the 6 continuous variables in the data set: FRESH, MILK, GROCERY, FROZEN, DETERGENTS_PAPER, and DELICATESSEN.
 
-## 3a. [5 points] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
+## 3a. \[5 points\] Hyperparameter Selection. What is the K you choose for this problem? How do you justify that choice?
 
-
-Ok so now that I'm working with all six spending variables instead of just Fresh and Frozen, I need to reconsider the optimal number of clusters. 
+Ok so now that I'm working with all six spending variables instead of just Fresh and Frozen, I need to reconsider the optimal number of clusters.
 
 But this is a more complex clustering problem since I am now moving from 2D to 6D space, so I'll apply the same methodical approach:
 
 ```{r}
 # Extracting all six spending variables
-all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", 
+                               "Frozen", "Detergents_Paper", 
+                               "Delicassen")]
 
 # Applying log transformation to address the skewness
 all_vars_log <- log1p(all_vars)
@@ -302,11 +307,13 @@ So after examining both methods with all six variables, I'm selecting K=4 as the
 
 So this decision maintains consistency with my earlier analysis on just Fresh and Frozen variables, which also identified four clusters as optimal. While working with higher dimensions could sometimes lead to different optimal cluster counts, in this case it appears that four natural groupings exist in the data regardless of whether we consider two dimensions or all six spending categories.
 
-## 3b. [20 points] List the values of the 6 variables at each center. Write a one sentence description of each group. How is each unique?
+## 3b. \[20 points\] List the values of the 6 variables at each center. Write a one sentence description of each group. How is each unique?
 
 ```{r}
 # Extracting all six spending variables
-all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", 
+                               "Frozen", "Detergents_Paper", 
+                               "Delicassen")]
 
 # Applying log transformation to address the skewness
 all_vars_log <- log1p(all_vars)
@@ -357,17 +364,15 @@ print("Cluster Sizes:")
 print(cluster_sizes)
 ```
 
-So the clusters revealed four distinct customer spending profiles when analyzing all six product categories. 
+So the clusters revealed four distinct customer spending profiles when analyzing all six product categories.
 
-**Cluster 1 (130 customers)** stands out as big spenders on fresh products (13,728 units average) and frozen goods (3,864 units), but they're relatively light buyers of other categories meaning their detergent/paper spending averages just 480 units. 
+**Cluster 1 (130 customers)** stands out as big spenders on fresh products (13,728 units average) and frozen goods (3,864 units), but they're relatively light buyers of other categories meaning their detergent/paper spending averages just 480 units.
 
 **Cluster 2** is the smallest group **(61 customers)** with an unusual pattern. It has extremely low fresh spending (903 units) but heavy investment in groceries (10,129 units) and detergents/paper (3,426 units), suggesting these might be specialty stores or cleaning supply businesses.
 
-**Cluster 3 (119 customers)** emerged as the broadest purchasers, leading in milk (9,028 units), grocery (13,276 units), and detergents/paper (4,777 units). These appear to be general-purpose retailers or supermarkets. 
+**Cluster 3 (119 customers)** emerged as the broadest purchasers, leading in milk (9,028 units), grocery (13,276 units), and detergents/paper (4,777 units). These appear to be general-purpose retailers or supermarkets.
 
 The final **Cluster 4 (130 customers)** shows restrained spending across all categories except moderate frozen purchases (1,318 units), likely representing small convenience stores or low-volume buyers.
-
-
 
 ```{r}
 # Calculating relative spending profiles 
@@ -400,20 +405,20 @@ print(relative_df)
 
 **Cluster 1** spends 14% more on fresh products and 26% more on frozen goods compared to average customers, but their purchases look strikingly low elsewhere. So they buy only 17% of the average detergents/paper spending and half the typical milk expenditure. This makes me think they're likely restaurants or meal prep services focused on core ingredients.
 
-
-**Cluster 2** surprised me with their extreme specialization since they spend 27% more on groceries and 19% more on detergents/paper than average, but barely touch fresh (8% of average) or frozen (10%) products. These could be cleaning supply retailers combined with grocery stores. 
+**Cluster 2** surprised me with their extreme specialization since they spend 27% more on groceries and 19% more on detergents/paper than average, but barely touch fresh (8% of average) or frozen (10%) products. These could be cleaning supply retailers combined with grocery stores.
 
 **Cluster 3** emerged as the all-round big spenders, purchasing 56% more milk, 67% more groceries, and 66% more detergents/paper than average.
 
 **Cluster 4** is interesting. So every category sits well below average, with detergent/paper spending at just 6% of the mean. These appear to be extremely budget-conscious buyers or perhaps small corner stores with limited shelf space.
-
 
 ```{r}
 library(tidyr)
 
 # Reshape data for plotting
 centers_long <- centers_df %>%
-  pivot_longer(cols = -Cluster, names_to = "Category", values_to = "Spending")
+  pivot_longer(cols = -Cluster, 
+               names_to = "Category", 
+               values_to = "Spending")
 
 # Plotting cluster centers
 ggplot(centers_long, aes(x = Category, y = Spending, fill = factor(Cluster))) +
@@ -426,11 +431,12 @@ ggplot(centers_long, aes(x = Category, y = Spending, fill = factor(Cluster))) +
        y = "Average Spending (m.u.)")
 ```
 
-       
 ```{r}
 # Plotting relative spending profiles
 relative_long <- relative_df %>%
-  pivot_longer(cols = -Cluster, names_to = "Category", values_to = "RelativeSpending")
+  pivot_longer(cols = -Cluster, 
+               names_to = "Category", 
+               values_to = "RelativeSpending")
 
 ggplot(relative_long, aes(x = Category, y = RelativeSpending, fill = factor(Cluster))) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -444,7 +450,6 @@ ggplot(relative_long, aes(x = Category, y = RelativeSpending, fill = factor(Clus
        y = "Relative Spending (cluster average / overall average)")
 ```
 
-
 So based on the cluster centers and relative spending patterns:
 
 **Cluster 1: Can be described as Fresh Food Specialists**. So this group shows exceptionally high spending on Fresh products while having below-average spending in most other categories, suggesting these are likely restaurants, fresh markets, or food service businesses that prioritize fresh ingredients over processed or packaged goods.
@@ -455,10 +460,7 @@ So based on the cluster centers and relative spending patterns:
 
 **Cluster 4: Small General Retailers** This cluster shows consistently below-average spending across all categories, with values roughly 1/3 to 1/2 of the overall means, suggesting these are small convenience stores or mini-markets with limited inventory requirements.
 
-
-
-
-## 4.[10 points] Create a two-way table showing how the groups from Question #2 and #3 intersect. Give a brief description of how the two sets of clusters relate.
+## 4.\[10 points\] Create a two-way table showing how the groups from Question #2 and #3 intersect. Give a brief description of how the two sets of clusters relate.
 
 ```{r}
 # For Question 2 - clustering based on Fresh and Frozen only
@@ -469,7 +471,10 @@ set.seed(123)
 km_result_2d <- kmeans(cluster_vars_scaled, centers = 4, nstart = 25)
 
 # For Question 3 - clustering based on all six variables
-all_vars <- wholesale_data[, c("Fresh", "Milk", "Grocery", "Frozen", "Detergents_Paper", "Delicassen")]
+all_vars <- wholesale_data[, c("Fresh", "Milk", 
+                               "Grocery", "Frozen", 
+                               "Detergents_Paper", 
+                               "Delicassen")]
 all_vars_log <- log1p(all_vars)
 all_vars_scaled <- scale(all_vars_log)
 set.seed(123)
@@ -485,16 +490,15 @@ print("Contingency Table of Cluster Assignments:")
 print(contingency_table)
 ```
 
-The cross-analysis revealed fascinating overlaps between the two clustering approaches. 
+The cross-analysis revealed fascinating overlaps between the two clustering approaches.
 
 Fresh-Frozen Cluster 1 (from the 2-variable model) aligns strongly with All-Variables Cluster 1 . I see that 87 of its 130 customers stayed grouped together when considering all spending categories. But it also split into Clusters 3 and 4 in the full model, telling me that some customers who looked similar in fresh/frozen spending actually differ significantly in other categories like detergents or delicatessen.
 
-
-The most dramatic shift appears in Fresh-Frozen Cluster 2 since only 7 customers remained in All-Variables Cluster 2, while 60 moved to Cluster 3 and 55 to Cluster 4. 
+The most dramatic shift appears in Fresh-Frozen Cluster 2 since only 7 customers remained in All-Variables Cluster 2, while 60 moved to Cluster 3 and 55 to Cluster 4.
 
 This shows that customers who appeared as mid-range fresh/frozen spenders actually divide into distinct groups when considering their full purchasing patterns.
 
-Interestingly, All-Variables Cluster 2 seems to draw customers almost exclusively from Fresh-Frozen Clusters 3 and 4 (19+35=54 of its 61 total). 
+Interestingly, All-Variables Cluster 2 seems to draw customers almost exclusively from Fresh-Frozen Clusters 3 and 4 (19+35=54 of its 61 total).
 
 This suggests the full model uncovered a specialty buyer group that the fresh/frozen-focused approach couldn't detect. Maybe likely those heavy detergent/paper spenders we saw earlier. The patterns confirm that while fresh/frozen spending provides some segmentation clues, considering all categories reveals more nuanced customer profiles that would be crucial for targeted marketing.
 
@@ -520,10 +524,14 @@ library(reshape2)
 
 # Convert to data frame for ggplot
 heatmap_data <- as.data.frame(as.table(contingency_table))
-names(heatmap_data) <- c("Fresh_Frozen_Cluster", "All_Variables_Cluster", "Count")
+names(heatmap_data) <- c("Fresh_Frozen_Cluster", 
+                         "All_Variables_Cluster", 
+                         "Count")
 
 # Create heatmap
-ggplot(heatmap_data, aes(x = Fresh_Frozen_Cluster, y = All_Variables_Cluster, fill = Count)) +
+ggplot(heatmap_data, aes(x = Fresh_Frozen_Cluster, 
+                         y = All_Variables_Cluster, 
+                         fill = Count)) +
   geom_tile() +
   geom_text(aes(label = Count), color = "black", size = 4) +
   scale_fill_gradient(low = "white", high = "steelblue") +
@@ -533,7 +541,3 @@ ggplot(heatmap_data, aes(x = Fresh_Frozen_Cluster, y = All_Variables_Cluster, fi
        y = "All Variables Clusters",
        fill = "Number of\nCustomers")
 ```
-
-
-
-
